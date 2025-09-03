@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 1 - Perspective Distortion Analysis | CS180 Portfolio</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="project1.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="../index.html" class="nav-link">← Back to Portfolio</a>
+        </nav>
+        
+        <header class="project-header">
+            <h1>Project 1: Perspective Distortion Analysis</h1>
+            <p class="project-subtitle">Understanding Focal Length Effects on Facial Proportions</p>
+        </header>
+
+        <section class="project-description">
+            <h2>Project Overview</h2>
+            <p>This project demonstrates how different camera focal lengths and subject distances affect the perceived proportions of facial features, particularly the nose and ears. The analysis shows the relationship between perspective compression and natural-looking proportions.</p>
+        </section>
+
+        <section class="focal-length-demo">
+            <h2>Part 1: Selfie: The Wrong Way vs. The Right Way</h2>
+            <div class="demo-grid">
+                <div class="demo-item">
+                    <div class="image-container">
+                        <img src="media/85mm-200cm.jpg" alt="85mm @ 200cm - Natural proportions" class="demo-image">
+                    </div>
+                    <div class="demo-label">
+                        <span class="focal-length">85mm</span>
+                        <span class="distance">@ 200cm</span>
+                    </div>
+                    <p class="demo-description">Most natural proportions, ears visible, background compressed</p>
+                </div>
+
+                <div class="demo-item">
+                    <div class="image-container">
+                        <img src="media/35mm-85cm.jpg" alt="35mm @ 85cm - Slight distortion" class="demo-image">
+                    </div>
+                    <div class="demo-label">
+                        <span class="focal-length">35mm</span>
+                        <span class="distance">@ 85cm</span>
+                    </div>
+                    <p class="demo-description">Slight nose enlargement, ears less prominent</p>
+                </div>
+
+                <div class="demo-item">
+                    <div class="image-container">
+                        <img src="media/16mm-40cm.jpg" alt="16mm @ 40cm - Moderate distortion" class="demo-image">
+                    </div>
+                    <div class="demo-label">
+                        <span class="focal-length">16mm</span>
+                        <span class="distance">@ 40cm</span>
+                    </div>
+                    <p class="demo-description">Noticeable nose projection, ears receding</p>
+                </div>
+
+                <div class="demo-item">
+                    <div class="image-container">
+                        <img src="media/12mm-30cm.jpg" alt="12mm @ 30cm - Strong distortion" class="demo-image">
+                    </div>
+                    <div class="demo-label">
+                        <span class="focal-length">12mm</span>
+                        <span class="distance">@ 30cm</span>
+                    </div>
+                    <p class="demo-description">Pronounced distortion, ears barely visible</p>
+                </div>
+
+                <div class="demo-item">
+                    <div class="image-container">
+                        <img src="media/8mm-20cm.jpg" alt="8mm @ 20cm - Extreme distortion" class="demo-image">
+                    </div>
+                    <div class="demo-label">
+                        <span class="focal-length">8mm</span>
+                        <span class="distance">@ 20cm</span>
+                    </div>
+                    <p class="demo-description">Maximum distortion, fish-eye effect</p>
+                </div>
+            </div>
+
+            <div class="architectural-explanation">
+                <h4>Understanding the Effect</h3>
+                <p>When you take a photo up close to the subject (Erfan Ballew), the camera exaggerates perspective. This means features closer to the lens (like the nose) look much larger than those farther away (like the ears), creating distortion. When you step back and zoom in, the relative distance between facial features becomes small compared to the camera’s distance, so the proportions look more natural. Zooming then fills the frame without reintroducing distortion. That’s why the second portrait looks more realistic and flattering.</p>
+            </div>
+        </section>
+
+        <section class="architectural-perspective">
+            <h2>Part 2: Architectural Perspective Compression</h2>
+            <p class="section-description">Urban scene analysis demonstrating perspective compression through distance and focal length changes.</p>
+            
+            <div class="architectural-demo">
+                <div class="arch-item">
+                    <div class="image-container">
+                        <img src="media/arch-zoomed.jpg" alt="Zoomed in urban scene - compressed perspective" class="demo-image">
+                    </div>
+                    <div class="demo-label">
+                        <span class="focal-length">Zoomed In</span>
+                        <span class="distance">Compressed Perspective</span>
+                    </div>
+                    <p class="demo-description">Flattened, compressed urban scene with zoomed focal length</p>
+                </div>
+
+                <div class="arch-item">
+                    <div class="image-container">
+                        <img src="media/arch-normal.jpg" alt="Normal urban scene - natural perspective" class="demo-image">
+                    </div>
+                    <div class="demo-label">
+                        <span class="focal-length">Normal View</span>
+                        <span class="distance">Natural Perspective</span>
+                    </div>
+                    <p class="demo-description">Natural perspective achieved by walking closer without zoom</p>
+                </div>
+            </div>
+
+            <div class="architectural-explanation">
+                <h4>Understanding the Effect</h3>
+                <p>When you zoom in from far away, the camera compresses distances along the depth of the scene. Objects that are actually far apart (like buildings down a street) look closer together and makes the scene look “flattened.” When you move closer and use a wider angle, nearby objects look much larger relative to distant ones, so the depth of the street feels stretched out.</p>
+            </div>
+        </section>
+
+        <section class="dolly-zoom">
+            <h2>Part 3: The Dolly Zoom</h2>
+            <p class="section-description">Recreating the classic "Vertigo shot" effect through simultaneous camera movement and focal length adjustment.</p>
+            
+            <div class="dolly-gif-container">
+                <div class="gif-wrapper">
+                    <img src="media/dolly-zoom.gif" alt="Dolly zoom effect demonstration" class="dolly-gif">
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
