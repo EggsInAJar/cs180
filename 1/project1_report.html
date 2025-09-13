@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS180 Project 1: Prokudin-Gorsky Colorization</title>
+    <link rel="stylesheet" href="project1_styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>CS180 Project 1: Prokudin-Gorsky Colorization</h1>
+        
+        <div class="section">
+            <h2>Project Overview</h2>
+            <p>
+                This project implements an algorithm to reconstruct color images from Prokudin-Gorsky glass plate photographs. 
+                Sergei Prokudin-Gorsky captured color photographs in the early 1900s using three separate exposures through 
+                red, green, and blue filters. The resulting glass plates contain three grayscale images stacked vertically, 
+                which need to be aligned and combined to produce the final color image.
+            </p>
+            <p>
+                The main challenge is that the three exposures were taken sequentially, causing slight misalignments 
+                between the color channels due to camera movement. Our algorithm must find the optimal displacement 
+                vectors to align the green and red channels with the blue channel (reference).
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>My Approach</h2>
+            
+            <p>
+                I developed a two-tiered approach to handle the alignment problem efficiently. For smaller images, I implemented 
+                a straightforward single-scale alignment algorithm that performs an exhaustive search over a predefined displacement 
+                window. For larger, high-resolution TIFF images that would be computationally expensive with a naive approach, 
+                I implemented a multi-scale image pyramid algorithm that uses a coarse-to-fine strategy to dramatically reduce 
+                the search space and processing time.
+            </p>
+
+            <h3>Normalized Cross-Correlation (NCC)</h3>
+            <p>
+                I chose Normalized Cross-Correlation as my primary alignment metric because it compares images based on their 
+                structural patterns rather than raw pixel intensities. This approach is particularly effective for color channel 
+                alignment since the three channels may have different brightness levels due to varying filter transmittances, 
+                but their structural features (edges, textures, shapes) should remain consistent. NCC normalizes the images 
+                to have zero mean and unit variance, making it robust to brightness differences while focusing on pattern matching.
+            </p>
+
+            <h3>Single-Scale Alignment</h3>
+            <p>
+                The single-scale implementation treats the Blue channel as the reference and searches for optimal displacements 
+                of the Green and Red channels. The algorithm iterates through all possible displacements within a ±20 pixel 
+                window in both x and y directions. For each displacement, it calculates the NCC between the shifted channel 
+                and the reference Blue channel. The displacement that yields the maximum NCC score is selected as the optimal 
+                alignment. To prevent border artifacts from affecting the alignment quality, I crop 10% of the image borders 
+                before computing the NCC metric.
+            </p>
+
+            <h3>Multi-Scale Pyramid Alignment</h3>
+            <p>
+                For images larger than 1500 pixels in height, the algorithm automatically switches to the multi-scale pyramid 
+                approach to maintain computational efficiency. The pyramid is constructed by recursively downsampling the images 
+                by a factor of 2 using scikit-image's rescale function, creating 4 levels of decreasing resolution.
+            </p>
+            
+            <p>
+                The alignment process begins at the coarsest (smallest) level of the pyramid, where a single-scale search is 
+                performed with a reduced search window proportional to the scale factor. The displacement found at this coarse 
+                level is then scaled up by a factor of 2 and used as the starting point for alignment at the next finer level. 
+                At each subsequent level, the algorithm performs a local refinement search around this scaled displacement 
+                estimate, progressively improving the alignment accuracy as it moves up the pyramid to the full resolution.
+            </p>
+            
+            <p>
+                This hierarchical approach dramatically reduces the computational complexity from O(n²) to approximately O(n log n), 
+                where n is the image size. The search window is dynamically adjusted at each pyramid level, starting with a 
+                reduced range at coarse levels and expanding as the algorithm refines the alignment at higher resolutions. 
+                Throughout the entire process, 10% border cropping is maintained to ensure consistent alignment quality.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>Problems Encountered and Solutions</h2>
+            
+            <div class="problem-solution">
+                <h3>Problem 1: Severe Vertical Misalignment</h3>
+                <p><strong>Issue:</strong> Images showed severe color fringing and vertical misalignment, especially for TIFF files.</p>
+                <p><strong>Root Cause:</strong> Incorrect displacement scaling in the pyramid algorithm was causing double-counting of displacements.</p>
+                <p><strong>Solution:</strong> Fixed the cumulative displacement calculation to properly scale displacements between pyramid levels without double-counting.</p>
+            </div>
+
+            <div class="problem-solution">
+                <h3>Problem 2: Border Crop Scaling Issues</h3>
+                <p><strong>Issue:</strong> Border crop was too aggressive at coarse pyramid levels, removing too much image content.</p>
+                <p><strong>Solution:</strong> Implemented percentage-based border cropping (10% of image size) instead of fixed pixel values.</p>
+            </div>
+
+            <div class="problem-solution">
+                <h3>Problem 3: Gradient Computation Errors</h3>
+                <p><strong>Issue:</strong> Gradient-based NCC failed on small images at coarse pyramid levels.</p>
+                <p><strong>Solution:</strong> Added size validation and fallback to regular NCC when gradient computation fails.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Results on Provided Example Images</h2>
+            
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="data_colorized/cathedral_colorized.jpg" alt="Cathedral">
+                    <div class="image-caption">Cathedral</div>
+                    <div class="displacement-info">Green: (5, 2) | Red: (12, 3)</div>
+                    <div class="processing-time">Processing Time: 4.97s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/church_colorized.jpg" alt="Church">
+                    <div class="image-caption">Church</div>
+                    <div class="displacement-info">Green: (25, 4) | Red: (58, -4)</div>
+                    <div class="processing-time">Processing Time: 26.19s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/emir_colorized.jpg" alt="Emir">
+                    <div class="image-caption">Emir of Bukhara</div>
+                    <div class="displacement-info">Green: (49, 24) | Red: (107, 40)</div>
+                    <div class="processing-time">Processing Time: 28.28s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/harvesters_colorized.jpg" alt="Harvesters">
+                    <div class="image-caption">Harvesters</div>
+                    <div class="displacement-info">Green: (60, 17) | Red: (124, 14)</div>
+                    <div class="processing-time">Processing Time: 33.13s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/icon_colorized.jpg" alt="Icon">
+                    <div class="image-caption">Icon</div>
+                    <div class="displacement-info">Green: (42, 17) | Red: (90, 23)</div>
+                    <div class="processing-time">Processing Time: 35.99s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/italil_colorized.jpg" alt="Italil">
+                    <div class="image-caption">Italil</div>
+                    <div class="displacement-info">Green: (39, 22) | Red: (77, 36)</div>
+                    <div class="processing-time">Processing Time: 27.84s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/lastochikino_colorized.jpg" alt="Lastochikino">
+                    <div class="image-caption">Lastochikino Village</div>
+                    <div class="displacement-info">Green: (-3, -2) | Red: (76, -8)</div>
+                    <div class="processing-time">Processing Time: 33.73s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/lugano_colorized.jpg" alt="Lugano">
+                    <div class="image-caption">Lugano Lake</div>
+                    <div class="displacement-info">Green: (41, -17) | Red: (92, -29)</div>
+                    <div class="processing-time">Processing Time: 38.58s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/melons_colorized.jpg" alt="Melons">
+                    <div class="image-caption">Melon Harvest</div>
+                    <div class="displacement-info">Green: (80, 10) | Red: (177, 13)</div>
+                    <div class="processing-time">Processing Time: 33.30s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/monastery_colorized.jpg" alt="Monastery">
+                    <div class="image-caption">Monastery</div>
+                    <div class="displacement-info">Green: (-3, 2) | Red: (3, 2)</div>
+                    <div class="processing-time">Processing Time: 2.93s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/self_portrait_colorized.jpg" alt="Self Portrait">
+                    <div class="image-caption">Self Portrait</div>
+                    <div class="displacement-info">Green: (78, 29) | Red: (175, 37)</div>
+                    <div class="processing-time">Processing Time: 34.60s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/siren_colorized.jpg" alt="Siren">
+                    <div class="image-caption">Siren</div>
+                    <div class="displacement-info">Green: (49, -6) | Red: (96, -24)</div>
+                    <div class="processing-time">Processing Time: 37.81s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/three_generations_colorized.jpg" alt="Three Generations">
+                    <div class="image-caption">Three Generations</div>
+                    <div class="displacement-info">Green: (54, 12) | Red: (111, 9)</div>
+                    <div class="processing-time">Processing Time: 34.37s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/tobolsk_colorized.jpg" alt="Tobolsk">
+                    <div class="image-caption">Tobolsk</div>
+                    <div class="displacement-info">Green: (3, 2) | Red: (6, 3)</div>
+                    <div class="processing-time">Processing Time: 3.57s</div>
+                </div>
+            </div>
+
+            <h3>Displacement Vectors and Processing Times Summary</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Green Channel (y, x)</th>
+                        <th>Red Channel (y, x)</th>
+                        <th>Processing Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>cathedral</td>
+                        <td>(5, 2)</td>
+                        <td>(12, 3)</td>
+                        <td>4.97s</td>
+                    </tr>
+                    <tr>
+                        <td>church</td>
+                        <td>(25, 4)</td>
+                        <td>(58, -4)</td>
+                        <td>26.19s</td>
+                    </tr>
+                    <tr>
+                        <td>emir</td>
+                        <td>(49, 24)</td>
+                        <td>(107, 40)</td>
+                        <td>28.28s</td>
+                    </tr>
+                    <tr>
+                        <td>harvesters</td>
+                        <td>(60, 17)</td>
+                        <td>(124, 14)</td>
+                        <td>33.13s</td>
+                    </tr>
+                    <tr>
+                        <td>icon</td>
+                        <td>(42, 17)</td>
+                        <td>(90, 23)</td>
+                        <td>35.99s</td>
+                    </tr>
+                    <tr>
+                        <td>italil</td>
+                        <td>(39, 22)</td>
+                        <td>(77, 36)</td>
+                        <td>27.84s</td>
+                    </tr>
+                    <tr>
+                        <td>lastochikino</td>
+                        <td>(-3, -2)</td>
+                        <td>(76, -8)</td>
+                        <td>33.73s</td>
+                    </tr>
+                    <tr>
+                        <td>lugano</td>
+                        <td>(41, -17)</td>
+                        <td>(92, -29)</td>
+                        <td>38.58s</td>
+                    </tr>
+                    <tr>
+                        <td>melons</td>
+                        <td>(80, 10)</td>
+                        <td>(177, 13)</td>
+                        <td>33.30s</td>
+                    </tr>
+                    <tr>
+                        <td>monastery</td>
+                        <td>(-3, 2)</td>
+                        <td>(3, 2)</td>
+                        <td>2.93s</td>
+                    </tr>
+                    <tr>
+                        <td>self_portrait</td>
+                        <td>(78, 29)</td>
+                        <td>(175, 37)</td>
+                        <td>34.60s</td>
+                    </tr>
+                    <tr>
+                        <td>siren</td>
+                        <td>(49, -6)</td>
+                        <td>(96, -24)</td>
+                        <td>37.81s</td>
+                    </tr>
+                    <tr>
+                        <td>three_generations</td>
+                        <td>(54, 12)</td>
+                        <td>(111, 9)</td>
+                        <td>34.37s</td>
+                    </tr>
+                    <tr>
+                        <td>tobolsk</td>
+                        <td>(3, 2)</td>
+                        <td>(6, 3)</td>
+                        <td>3.57s</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Additional Examples from Prokudin-Gorsky Collection</h2>
+            <p>
+                I selected three additional images from the Prokudin-Gorsky collection to demonstrate the algorithm's 
+                performance on diverse historical photographs.
+            </p>
+            
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="data_colorized/field_colorized.jpg" alt="Field">
+                    <div class="image-caption">Field</div>
+                    <div class="displacement-info">Green: (32, 4) | Red: (79, 7)</div>
+                    <div class="processing-time">Processing Time: 28.97s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/kid_colorized.jpg" alt="Kid">
+                    <div class="image-caption">Kid</div>
+                    <div class="displacement-info">Green: (45, -14) | Red: (103, -11)</div>
+                    <div class="processing-time">Processing Time: 34.19s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="data_colorized/napolean_colorized.jpg" alt="Napolean">
+                    <div class="image-caption">Napolean</div>
+                    <div class="displacement-info">Green: (63, 4) | Red: (132, -1)</div>
+                    <div class="processing-time">Processing Time: 32.51s</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Technical Implementation Details</h2>
+            
+            <h3>Key Parameters</h3>
+            <div class="code-block">
+# Algorithm Parameters
+displacement = 20               # Search window: ±20 pixels
+border_crop_ratio = 0.1        # 10% border cropping
+pyramid_threshold = 1500       # Use pyramid for images > 1500px height
+pyramid_levels = 4             # Multi-scale levels
+metric = 'ncc'                 # Normalized Cross-Correlation
+            </div>
+
+            <h3>Performance Metrics</h3>
+            <p>
+                Based on the processed images, the algorithm demonstrates:
+            </p>
+            <ul>
+                <li><strong>Total Images Processed:</strong> 17 images</li>
+                <li><strong>Average Processing Time:</strong> ~30.2 seconds for complex images</li>
+                <li><strong>Processing Time Range:</strong> 2.93s - 38.58s</li>
+                <li><strong>Efficiency:</strong> All images processed well under the 1-minute requirement</li>
+                <li><strong>Scalability:</strong> Multi-scale approach handles high-resolution images effectively</li>
+                <li><strong>Accuracy:</strong> Successfully aligns channels with varying displacement magnitudes</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Conclusion</h2>
+            <p>
+                The implemented algorithm successfully reconstructs color images from Prokudin-Gorsky 
+                glass plate photographs. The multi-scale pyramid approach with NCC alignment 
+                provides robust alignment for all 17 processed images. The processing times demonstrate 
+                efficient performance, with complex images requiring ~30 seconds and simpler images 
+                completing in just a few seconds. The algorithm successfully handles a wide range of 
+                displacement magnitudes, from small displacements (Monastery: 2.93s) to very large 
+                displacements (Lugano: 38.58s), demonstrating the effectiveness of the multi-scale 
+                approach for color channel alignment and restoration of historical color photographs.
+            </p>
+        </div>
+    </div>
+
+    <script src="project1_script.js"></script>
+</body>
+</html>

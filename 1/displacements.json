@@ -1,0 +1,298 @@
+{
+  "displacements": [
+    {
+      "image_name": "field",
+      "timestamp": "2025-09-12_22-15-32",
+      "processing_time": 28.970561981201172,
+      "green_displacement": {
+        "y": 32,
+        "x": 4
+      },
+      "red_displacement": {
+        "y": 79,
+        "x": 7
+      },
+      "displacement_magnitude": {
+        "green": 32.2490309931942,
+        "red": 79.30952023559341
+      }
+    },
+    {
+      "image_name": "emir",
+      "timestamp": "2025-09-12_22-16-01",
+      "processing_time": 28.28156018257141,
+      "green_displacement": {
+        "y": 49,
+        "x": 24
+      },
+      "red_displacement": {
+        "y": 107,
+        "x": 40
+      },
+      "displacement_magnitude": {
+        "green": 54.56189146281496,
+        "red": 114.23221962301179
+      }
+    },
+    {
+      "image_name": "italil",
+      "timestamp": "2025-09-12_22-16-29",
+      "processing_time": 27.8407039642334,
+      "green_displacement": {
+        "y": 39,
+        "x": 22
+      },
+      "red_displacement": {
+        "y": 77,
+        "x": 36
+      },
+      "displacement_magnitude": {
+        "green": 44.77722635447622,
+        "red": 85.0
+      }
+    },
+    {
+      "image_name": "monastery",
+      "timestamp": "2025-09-12_22-16-33",
+      "processing_time": 2.9343783855438232,
+      "green_displacement": {
+        "y": -3,
+        "x": 2
+      },
+      "red_displacement": {
+        "y": 3,
+        "x": 2
+      },
+      "displacement_magnitude": {
+        "green": 3.605551275463989,
+        "red": 3.605551275463989
+      }
+    },
+    {
+      "image_name": "church",
+      "timestamp": "2025-09-12_22-16-59",
+      "processing_time": 26.193710803985596,
+      "green_displacement": {
+        "y": 25,
+        "x": 4
+      },
+      "red_displacement": {
+        "y": 58,
+        "x": -4
+      },
+      "displacement_magnitude": {
+        "green": 25.317977802344327,
+        "red": 58.137767414994535
+      }
+    },
+    {
+      "image_name": "three_generations",
+      "timestamp": "2025-09-12_22-17-33",
+      "processing_time": 34.36997103691101,
+      "green_displacement": {
+        "y": 54,
+        "x": 12
+      },
+      "red_displacement": {
+        "y": 111,
+        "x": 9
+      },
+      "displacement_magnitude": {
+        "green": 55.31726674375732,
+        "red": 111.36426715962351
+      }
+    },
+    {
+      "image_name": "lugano",
+      "timestamp": "2025-09-12_22-18-12",
+      "processing_time": 38.57681488990784,
+      "green_displacement": {
+        "y": 41,
+        "x": -17
+      },
+      "red_displacement": {
+        "y": 92,
+        "x": -29
+      },
+      "displacement_magnitude": {
+        "green": 44.384682042344295,
+        "red": 96.46242791885346
+      }
+    },
+    {
+      "image_name": "melons",
+      "timestamp": "2025-09-12_22-18-46",
+      "processing_time": 33.29585003852844,
+      "green_displacement": {
+        "y": 80,
+        "x": 10
+      },
+      "red_displacement": {
+        "y": 177,
+        "x": 13
+      },
+      "displacement_magnitude": {
+        "green": 80.62257748298549,
+        "red": 177.47675904185314
+      }
+    },
+    {
+      "image_name": "lastochikino",
+      "timestamp": "2025-09-12_22-19-20",
+      "processing_time": 33.727396965026855,
+      "green_displacement": {
+        "y": -3,
+        "x": -2
+      },
+      "red_displacement": {
+        "y": 76,
+        "x": -8
+      },
+      "displacement_magnitude": {
+        "green": 3.605551275463989,
+        "red": 76.4198926981712
+      }
+    },
+    {
+      "image_name": "tobolsk",
+      "timestamp": "2025-09-12_22-19-24",
+      "processing_time": 3.569927215576172,
+      "green_displacement": {
+        "y": 3,
+        "x": 2
+      },
+      "red_displacement": {
+        "y": 6,
+        "x": 3
+      },
+      "displacement_magnitude": {
+        "green": 3.605551275463989,
+        "red": 6.708203932499369
+      }
+    },
+    {
+      "image_name": "icon",
+      "timestamp": "2025-09-12_22-20-00",
+      "processing_time": 35.9931218624115,
+      "green_displacement": {
+        "y": 42,
+        "x": 17
+      },
+      "red_displacement": {
+        "y": 90,
+        "x": 23
+      },
+      "displacement_magnitude": {
+        "green": 45.31004303683677,
+        "red": 92.89241088485109
+      }
+    },
+    {
+      "image_name": "cathedral",
+      "timestamp": "2025-09-12_22-20-06",
+      "processing_time": 4.971386194229126,
+      "green_displacement": {
+        "y": 5,
+        "x": 2
+      },
+      "red_displacement": {
+        "y": 12,
+        "x": 3
+      },
+      "displacement_magnitude": {
+        "green": 5.385164807134504,
+        "red": 12.36931687685298
+      }
+    },
+    {
+      "image_name": "kid",
+      "timestamp": "2025-09-12_22-20-40",
+      "processing_time": 34.18512201309204,
+      "green_displacement": {
+        "y": 45,
+        "x": -14
+      },
+      "red_displacement": {
+        "y": 103,
+        "x": -11
+      },
+      "displacement_magnitude": {
+        "green": 47.12748667179272,
+        "red": 103.58571330062848
+      }
+    },
+    {
+      "image_name": "siren",
+      "timestamp": "2025-09-12_22-21-18",
+      "processing_time": 37.80823493003845,
+      "green_displacement": {
+        "y": 49,
+        "x": -6
+      },
+      "red_displacement": {
+        "y": 96,
+        "x": -24
+      },
+      "displacement_magnitude": {
+        "green": 49.36598018878993,
+        "red": 98.95453501482385
+      }
+    },
+    {
+      "image_name": "napolean",
+      "timestamp": "2025-09-12_22-21-51",
+      "processing_time": 32.509166955947876,
+      "green_displacement": {
+        "y": 63,
+        "x": 4
+      },
+      "red_displacement": {
+        "y": 132,
+        "x": -1
+      },
+      "displacement_magnitude": {
+        "green": 63.12685640834652,
+        "red": 132.00378782444085
+      }
+    },
+    {
+      "image_name": "self_portrait",
+      "timestamp": "2025-09-12_22-22-26",
+      "processing_time": 34.60293984413147,
+      "green_displacement": {
+        "y": 78,
+        "x": 29
+      },
+      "red_displacement": {
+        "y": 175,
+        "x": 37
+      },
+      "displacement_magnitude": {
+        "green": 83.21658488546619,
+        "red": 178.86866690396056
+      }
+    },
+    {
+      "image_name": "harvesters",
+      "timestamp": "2025-09-12_22-23-00",
+      "processing_time": 33.13125419616699,
+      "green_displacement": {
+        "y": 60,
+        "x": 17
+      },
+      "red_displacement": {
+        "y": 124,
+        "x": 14
+      },
+      "displacement_magnitude": {
+        "green": 62.36184731067546,
+        "red": 124.78781991845197
+      }
+    }
+  ],
+  "metadata": {
+    "created": "2025-09-12T22:15:32.961141",
+    "last_updated": "2025-09-12T22:23:00.603473",
+    "total_images": 17
+  }
+}
