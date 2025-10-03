@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS180 Project 2: Computer Vision - Filters, Edges, and Image Processing</title>
+    <link rel="stylesheet" href="project2_styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>CS180 Project 2: Computer Vision</h1>
+        <p style="text-align: center; font-size: 1.25rem; color: #64748b; margin-bottom: 40px;">
+            Filters, Edges, Hybrid Images, and Multi-Resolution Blending
+        </p>
+        
+        <div class="section">
+            <h2>Project Overview</h2>
+            <p>
+                This project implements advanced computer vision algorithms including convolution operations, 
+                edge detection using finite difference operators and Derivative of Gaussian (DoG) filters, 
+                image sharpening through unsharp masking, hybrid image creation using frequency domain processing, 
+                and multi-resolution blending using Gaussian and Laplacian pyramids.
+            </p>
+            <p>
+                The implementation covers both spatial and frequency domain approaches, demonstrating the 
+                mathematical foundations of digital image processing while providing practical applications 
+                for image enhancement, analysis, and synthesis.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>Part 1: Filters and Edges</h2>
+            
+            <h3>Part 1.1: Convolution Implementation</h3>
+            
+            <div class="methodology">
+                <h4>Understanding Convolution and Implementation Trade-offs</h4>
+                <p>Convolution is a fundamental operation in computer vision that applies a kernel (filter) to every pixel in an image. This section demonstrates three different approaches to implementing 2D convolution, each representing a different balance between code clarity, performance, and optimization level.</p>
+                
+                <p><strong>Implementation Approaches:</strong></p>
+                <ul>
+                    <li><strong>Four Nested Loops:</strong> The most straightforward implementation using explicit nested loops. While easy to understand and debug, this approach has O(n²k²) complexity and serves primarily educational purposes.</li>
+                    <li><strong>Two Loops with NumPy:</strong> An optimized version that leverages NumPy's vectorized operations to eliminate inner loops, reducing complexity and improving performance while maintaining code readability.</li>
+                    <li><strong>SciPy Library:</strong> A highly optimized C implementation that serves as both our reference for accuracy validation and our benchmark for performance comparison.</li>
+                </ul>
+                
+                <p><strong>Boundary Handling Strategy:</strong></p>
+                <p>All implementations use zero-padding to handle image boundaries. When the convolution kernel extends beyond the image edges, we assume zero values for out-of-bounds pixels. This approach ensures consistent output dimensions while preventing boundary artifacts that could affect subsequent processing steps.</p>
+            </div>
+
+            <div class="code-section">
+                <h4>Implementation Code:</h4>
+                
+                <div class="code-block">
+                    <h5>Four Nested Loops Implementation:</h5>
+                    <pre><code>def convolution_four_loops(image, kernel, padding):
+    h, w = image.shape
+    kh, kw = kernel.shape
+    result = np.zeros((h, w))
+    
+    for i in range(h):
+        for j in range(w):
+            for ki in range(kh):
+                for kj in range(kw):
+                    img_i = i + ki - padding
+                    img_j = j + kj - padding
+                    if 0 <= img_i < h and 0 <= img_j < w:
+                        result[i, j] += image[img_i, img_j] * kernel[ki, kj]
+    
+    return result</code></pre>
+                </div>
+
+                <div class="code-block">
+                    <h5>Two Loops with NumPy Optimization:</h5>
+                    <pre><code>def convolution_two_loops(image, kernel, padding):
+    h, w = image.shape
+    kh, kw = kernel.shape
+    result = np.zeros((h, w))
+    
+    for i in range(h):
+        for j in range(w):
+            start_i = max(0, i - padding)
+            end_i = min(h, i + kh - padding)
+            start_j = max(0, j - padding)
+            end_j = min(w, j + kw - padding)
+            
+            kernel_start_i = max(0, padding - i)
+            kernel_start_j = max(0, padding - j)
+            
+            img_region = image[start_i:end_i, start_j:end_j]
+            kernel_region = kernel[kernel_start_i:kernel_start_i+end_i-start_i,
+                                  kernel_start_j:kernel_start_j+end_j-start_j]
+            
+            result[i, j] = np.sum(img_region * kernel_region)
+    
+    return result</code></pre>
+                </div>
+            </div>
+
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="convolution_results.png" alt="Convolution Results">
+                    <div class="image-caption">Convolution Results: Original, Blurred, Edge Detection</div>
+                    <div class="displacement-info">Convolution applied to cameraman image with finite difference operators</div>
+                </div>
+            </div>
+
+            <div class="success">
+                <h4>Runtime Performance Analysis (Measured Results):</h4>
+                <ul>
+                    <li><strong>NumPy vs Four Loops:</strong> 1.4x speedup achieved through NumPy vectorization</li>
+                    <li><strong>SciPy vs NumPy:</strong> 75.6x speedup due to highly optimized C implementation</li>
+                    <li><strong>Numerical Accuracy:</strong> Four loops vs Two loops difference: 8.88e-16 (essentially identical)</li>
+                    <li><strong>Boundary Handling:</strong> All implementations use consistent zero-padding for uniform results</li>
+                    <li><strong>Memory Efficiency:</strong> Vectorized operations reduce memory overhead and improve cache utilization</li>
+                </ul>
+                
+                <p><strong>Key Insights:</strong> The dramatic performance difference between NumPy and SciPy (75.6x) demonstrates the importance of using optimized libraries for production code. While the NumPy implementation provides good readability and moderate performance, SciPy's underlying C implementation offers the best performance for computationally intensive tasks.</p>
+            </div>
+
+            <h3>Part 1.2: Finite Difference Operators</h3>
+            <div class="algorithm-steps">
+                <h4>Edge Detection Process:</h4>
+                <ol>
+                    <li><strong>Dx Operator:</strong> [1, 0, -1] horizontal gradient detection</li>
+                    <li><strong>Dy Operator:</strong> [1, 0, -1]ᵀ vertical gradient detection</li>
+                    <li><strong>Gradient Magnitude:</strong> √(∂I/∂x)² + (∂I/∂y)²</li>
+                    <li><strong>Threshold Selection:</strong> Empirically chosen threshold of 80 for optimal edge-noise balance</li>
+                </ol>
+            </div>
+
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="part1_2_finite_differences.png" alt="Finite Differences Results">
+                    <div class="image-caption">Finite Difference Results on Cameraman Image</div>
+                    <div class="displacement-info">Threshold: 80 | Gradient range: [0, 255] | Edge pixels detected</div>
+                </div>
+            </div>
+
+            <div class="problem-solution">
+                <h4>Threshold Selection and Trade-off Analysis:</h4>
+                <p><strong>Challenge:</strong> The key challenge in edge detection is balancing two competing goals:</p>
+                <ul>
+                    <li><strong>Finding All Edges:</strong> Capturing all important structural boundaries in the image</li>
+                    <li><strong>Removing Noise:</strong> Eliminating spurious gradients from image noise and background textures</li>
+                </ul>
+                
+                <p><strong>Threshold Decision: 80</strong></p>
+                <p><strong>Reasoning:</strong> After extensive testing with various threshold values, I selected 80 based on the following analysis:</p>
+                
+                <div style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; border-radius: 5px;">
+                    <h5 style="margin: 0 0 10px 0; color: #007bff;">Trade-off Analysis:</h5>
+                    <ul style="margin: 0;">
+                        <li><strong>Too Low (e.g., 30-50):</strong> Captures more edges but shows excessive background texture and noise artifacts</li>
+                        <li><strong>Too High (e.g., 120-150):</strong> Removes noise effectively but loses important cameraman details and structural edges</li>
+                        <li><strong>Optimal (80):</strong> Preserves critical cameraman features while suppressing background noise</li>
+                    </ul>
+                </div>
+                
+                <p><strong>Specific Issues Addressed:</strong></p>
+                <ul>
+                    <li><strong>Background vs Cameraman:</strong> Threshold 80 successfully separates the cameraman subject from the background building and sky, preventing the background from overwhelming the main subject</li>
+                    <li><strong>Detail Preservation:</strong> Important features like the camera, tripod, and facial details are preserved without being lost to noise suppression</li>
+                    <li><strong>Noise Elimination:</strong> Background textures and sensor noise are effectively filtered out</li>
+                </ul>
+                
+                <p><strong>Justification:</strong> This threshold provides the optimal balance for the cameraman image, ensuring the main subject remains prominent while background distractions are minimized. The choice prioritizes structural integrity of the primary subject over capturing every minor texture variation.</p>
+            </div>
+
+            <h3>Part 1.3: Derivative of Gaussian (DoG) Filters</h3>
+            <div class="algorithm-steps">
+                <h4>DoG Construction Process:</h4>
+                <ol>
+                    <li><strong>Gaussian Kernel:</strong> 15×15 kernel with σ=2.0 using cv2.getGaussianKernel</li>
+                    <li><strong>DoG Filters:</strong> Convolution of Gaussian with finite difference operators</li>
+                    <li><strong>Method 1:</strong> Gaussian smoothing followed by finite differences</li>
+                    <li><strong>Method 2:</strong> Direct DoG filter application (single convolution per direction)</li>
+                </ol>
+            </div>
+
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="part1_3_derivative_of_gaussian.png" alt="DoG Filter Results">
+                    <div class="image-caption">DoG Filter Results: Both Methods Produce Identical Results</div>
+                    <div class="displacement-info">Maximum difference: &lt; 1e-10 | Computational efficiency: DoG approach preferred</div>
+                </div>
+            </div>
+
+            <div class="success">
+                <h4>Method Comparison Results:</h4>
+                <ul>
+                    <li><strong>Mathematical Equivalence:</strong> Both methods produce identical results (difference &lt; 1e-10)</li>
+                    <li><strong>Noise Reduction:</strong> Gaussian smoothing significantly reduces noise compared to raw finite differences</li>
+                    <li><strong>Computational Efficiency:</strong> DoG approach requires only one convolution per direction vs two for Method 1</li>
+                    <li><strong>Edge Quality:</strong> Smoother, more continuous edge detection with reduced artifacts</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="section">
+            <h2>Part 2: Applications</h2>
+            
+            <h3>Part 2.1: Unsharp Masking</h3>
+            
+            <div class="methodology">
+                <h4>Understanding Unsharp Masking: A Frequency Domain Perspective</h4>
+                <p>Unsharp masking is a powerful image enhancement technique that works by manipulating the frequency components of an image. To understand how it works, we need to think about images in terms of their frequency content.</p>
+                
+                <p><strong>Frequency Components in Images:</strong></p>
+                <ul>
+                    <li><strong>Low Frequencies:</strong> Represent gradual changes in brightness, such as smooth gradients, shadows, and the overall shape of objects</li>
+                    <li><strong>High Frequencies:</strong> Represent rapid changes in brightness, such as edges, fine details, and textures</li>
+                </ul>
+                
+                <p><strong>The Relationship Between Blur and Frequency:</strong></p>
+                <p>When we apply a blur filter to an image, we're essentially removing high-frequency information. Think of blurring as a low-pass filter that smooths out rapid changes while preserving gradual ones. The more we blur, the more high-frequency details we lose.</p>
+                
+                <p><strong>How Unsharp Masking Works:</strong></p>
+                <p>The name "unsharp masking" comes from traditional darkroom photography, but the digital version follows the same principle. The process cleverly uses the relationship between blur and frequency to enhance image sharpness:</p>
+                
+                <div class="algorithm-steps">
+                    <h4>The Unsharp Masking Process:</h4>
+                    <ol>
+                        <li><strong>Create a Blurred Version:</strong> Apply a Gaussian blur to the original image. This creates a "low-frequency" version that contains only the smooth, gradual changes.</li>
+                        <li><strong>Extract High Frequencies:</strong> Subtract the blurred image from the original. This gives us the "high-frequency" component - all the edges, details, and textures that were removed by blurring.</li>
+                        <li><strong>Amplify and Recombine:</strong> Multiply the high-frequency component by an amplification factor, then add it back to the original image. This boosts the edges and details without affecting the overall brightness or contrast.</li>
+                    </ol>
+                </div>
+                
+                <p><strong>Why This Works:</strong></p>
+                <p>The brilliance of unsharp masking lies in its ability to selectively enhance only the high-frequency details. By amplifying the difference between the original and blurred versions, we're essentially boosting the edges and fine details that make an image appear sharp, while leaving the overall structure unchanged.</p>
+                
+                <p><strong>Controlling the Effect:</strong></p>
+                <p>The amplification factor (amount) controls how much sharpening is applied. Higher values create more dramatic sharpening effects, while lower values provide subtle enhancement. This allows photographers and image processors to fine-tune the sharpening to match their artistic vision or technical requirements.</p>
+            </div>
+
+            <div class="image-grid" style="grid-template-columns: 1fr;">
+                <div class="image-item" style="max-width: 100%;">
+                    <img src="part2_1_sharpening_blurryMe.png" alt="Unsharp Masking Results" style="width: 100%; height: auto;">
+                    <div class="image-caption">Unsharp Masking with Varying Sharpening Amounts</div>
+                    <div class="displacement-info">Amounts: 0.5, 1.0, 1.5, 2.0 | High frequencies amplified for edge enhancement</div>
+                </div>
+            </div>
+            
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="part2_1_evaluation.png" alt="Blur-Sharpen Evaluation">
+                    <div class="image-caption">Evaluation: Blur → Sharpen Test</div>
+                    <div class="displacement-info">MSE comparison | Sharpening improves edge definition</div>
+                </div>
+                <div class="image-item">
+                    <img src="part2_1_single_convolution_test.png" alt="Single Convolution Test">
+                    <div class="image-caption">Single Convolution vs Two-Step Method</div>
+                    <div class="displacement-info">Maximum difference: &lt; 1e-6 | Equivalent mathematical approaches</div>
+                </div>
+            </div>
+
+            <div class="success">
+                <h4>Demonstration Results and Analysis:</h4>
+                
+                <p><strong>Varying Sharpening Amounts:</strong></p>
+                <p>The results above demonstrate how different amplification factors affect the final image:</p>
+                <ul>
+                    <li><strong>Amount = 0.5:</strong> Provides subtle enhancement that preserves natural appearance while gently boosting edge definition</li>
+                    <li><strong>Amount = 1.0:</strong> Offers balanced sharpening that noticeably improves detail without appearing artificial</li>
+                    <li><strong>Amount = 1.5:</strong> Creates more dramatic sharpening with enhanced edge contrast and texture detail</li>
+                    <li><strong>Amount = 2.0:</strong> Produces aggressive sharpening that may introduce halos around edges if overdone</li>
+                </ul>
+                
+                <p><strong>Key Observations:</strong></p>
+                <ul>
+                    <li><strong>Frequency Separation:</strong> The blurred version shows only low-frequency content (smooth gradients), while the high-frequency version reveals only edges and fine details</li>
+                    <li><strong>Selective Enhancement:</strong> Only the edges and details are amplified, leaving the overall image structure unchanged</li>
+                    <li><strong>Parameter Sensitivity:</strong> Small changes in the amount parameter can significantly affect the perceived sharpness</li>
+                    <li><strong>Boundary Preservation:</strong> The technique maintains natural image boundaries without introducing artifacts</li>
+                </ul>
+                
+                <p><strong>Practical Applications:</strong></p>
+                <p>Unsharp masking is widely used in photography, medical imaging, and digital art to restore sharpness lost during image capture or processing. The ability to control the enhancement strength makes it versatile for both subtle corrections and dramatic artistic effects.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Part 2.2: Hybrid Images</h2>
+            
+            <h3>FFT-Based Hybrid Image Creation</h3>
+            <div class="algorithm-steps">
+                <h4>Hybrid Image Algorithm:</h4>
+                <ol>
+                    <li><strong>Image Alignment:</strong> Manual point selection for precise alignment</li>
+                    <li><strong>Frequency Domain Filtering:</strong> FFT-based Gaussian filtering for efficiency</li>
+                    <li><strong>Low-Frequency Extraction:</strong> Far image with low σ₁ = 0.3</li>
+                    <li><strong>High-Frequency Extraction:</strong> Near image with high σ₂ = 3.0</li>
+                    <li><strong>Amplification:</strong> High frequencies amplified by 1.5× for prominence</li>
+                    <li><strong>Hybrid Combination:</strong> Low_freq₁ + High_freq₂</li>
+                </ol>
+            </div>
+
+            <h3>Complete Process Visualization (Shrek Pair)</h3>
+            <div class="image-grid" style="grid-template-columns: 1fr;">
+                <div class="image-item" style="max-width: 100%;">
+                    <img src="hybrid_python/results/shrek_complete_process.png" alt="Complete Hybrid Process" style="width: 100%; height: auto;">
+                    <div class="image-caption">Complete Hybrid Process Visualization</div>
+                    <div class="displacement-info">Original images | Filtered results | FFT spectra | Cutoff frequencies | Full process breakdown</div>
+                </div>
+            </div>
+            
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="hybrid_python/shrekpair/1.jpg" alt="Shrek Image 1">
+                    <div class="image-caption">Original Image 1 (Low Frequency Source)</div>
+                    <div class="displacement-info">Far image | σ₁ = 0.3 | Low-frequency content</div>
+                </div>
+                <div class="image-item">
+                    <img src="hybrid_python/shrekpair/2.jpg" alt="Shrek Image 2">
+                    <div class="image-caption">Original Image 2 (High Frequency Source)</div>
+                    <div class="displacement-info">Near image | σ₂ = 3.0 | High-frequency content</div>
+                </div>
+                <div class="image-item">
+                    <img src="hybrid_python/results/1_2_hybrid_σ0.3_3.0_amp1.5.png" alt="Shrek Hybrid Result">
+                    <div class="image-caption">Final Hybrid Result</div>
+                    <div class="displacement-info">σ₁=0.3, σ₂=3.0, amp=1.5 | Viewing distance dependent perception</div>
+                </div>
+            </div>
+
+            <h3>Additional Hybrid Images</h3>
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="hybrid_python/images/DerekPicture.jpg" alt="Derek Picture">
+                    <div class="image-caption">Derek Picture (Original)</div>
+                    <div class="displacement-info">High-frequency source | Expression change</div>
+                </div>
+                <div class="image-item">
+                    <img src="hybrid_python/images/nutmeg.jpg" alt="Nutmeg">
+                    <div class="image-caption">Nutmeg (Original)</div>
+                    <div class="displacement-info">Low-frequency source | Background details</div>
+                </div>
+                <div class="image-item">
+                    <img src="hybrid_python/results/nutmeg_DerekPicture_hybrid_σ0.3_3.0_amp1.5.png" alt="Derek-Nutmeg Hybrid">
+                    <div class="image-caption">Derek + Nutmeg Hybrid</div>
+                    <div class="displacement-info">Classic hybrid example | FFT-based processing</div>
+                </div>
+            </div>
+
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="hybrid_python/spongebob/3.jpg" alt="Spongebob 3">
+                    <div class="image-caption">Spongebob Image 3 (Original)</div>
+                    <div class="displacement-info">Expression variation | High-frequency features</div>
+                </div>
+                <div class="image-item">
+                    <img src="hybrid_python/spongebob/4.jpg" alt="Spongebob 4">
+                    <div class="image-caption">Spongebob Image 4 (Original)</div>
+                    <div class="displacement-info">Different expression | Low-frequency structure</div>
+                </div>
+                <div class="image-item">
+                    <img src="hybrid_python/results/3_4_hybrid_σ0.3_3.0_amp1.5.png" alt="Spongebob Hybrid">
+                    <div class="image-caption">Spongebob 3 + 4 Hybrid</div>
+                    <div class="displacement-info">Expression morphing | Distance-dependent perception</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="section">
+            <h2>Part 2.3 & 2.4: Multi-Resolution Blending</h2>
+            
+            <h3>Burt-Adelson Algorithm Implementation</h3>
+            <div class="algorithm-steps">
+                <h4>FFT-Based Multi-Resolution Blending:</h4>
+                <ol>
+                    <li><strong>Gaussian Stack:</strong> Multiple blur levels with configurable σ₀ and scale factor k</li>
+                    <li><strong>Laplacian Stack:</strong> Difference images between consecutive Gaussian levels</li>
+                    <li><strong>Mask Stack:</strong> Blurred masks for smooth transitions at each level</li>
+                    <li><strong>Frequency Domain:</strong> FFT-based Gaussian filtering for computational efficiency</li>
+                    <li><strong>Blending:</strong> Weighted combination of Laplacian bands using mask stack</li>
+                    <li><strong>Reconstruction:</strong> Sum all blended frequency bands to create final result</li>
+                </ol>
+            </div>
+
+            <h3>Apple + Orange Visualization</h3>
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="multi_resolution_blending/spline/apple.jpeg" alt="Apple Original">
+                    <div class="image-caption">Apple (Original)</div>
+                    <div class="displacement-info">Source image 1 | Natural lighting</div>
+                </div>
+                <div class="image-item">
+                    <img src="multi_resolution_blending/spline/orange.jpeg" alt="Orange Original">
+                    <div class="image-caption">Orange (Original)</div>
+                    <div class="displacement-info">Source image 2 | Complementary colors</div>
+                </div>
+                <div class="image-item">
+                    <img src="multi_resolution_blending/results/sharp_vs_smooth_comparison.png" alt="Sharp vs Smooth Comparison">
+                    <div class="image-caption">Sharp vs Smooth Mask Comparison</div>
+                    <div class="displacement-info">Mask quality analysis | Transition smoothness</div>
+                </div>
+                <div class="image-item">
+                    <img src="multi_resolution_blending/results/apple_orange_step_blend_advanced.png" alt="Apple Orange Blend">
+                    <div class="image-caption">Apple + Orange Blend Result</div>
+                    <div class="displacement-info">Seamless blending | Multi-resolution approach</div>
+                </div>
+            </div>
+
+            <h3>Figure 3.42 Recreation - Laplacian Stacks</h3>
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="multi_resolution_blending/results/orange_stacks_improved.png" alt="Laplacian Stacks">
+                    <div class="image-caption">Figure 3.42: Gaussian and Laplacian Stacks</div>
+                    <div class="displacement-info">Multi-resolution decomposition | Frequency bands</div>
+                </div>
+            </div>
+
+            <h3>Custom Blended Images</h3>
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="multi_resolution_blending/spline/car/1.jpg" alt="Car 1">
+                    <div class="image-caption">Car Image 1 (Original)</div>
+                    <div class="displacement-info">Source vehicle | Different angle</div>
+                </div>
+                <div class="image-item">
+                    <img src="multi_resolution_blending/spline/car/2.jpg" alt="Car 2">
+                    <div class="image-caption">Car Image 2 (Original)</div>
+                    <div class="displacement-info">Target vehicle | Alignment required</div>
+                </div>
+                <div class="image-item">
+                    <img src="multi_resolution_blending/results/carblend.png" alt="Car Blend">
+                    <div class="image-caption">Car Blend Result</div>
+                    <div class="displacement-info">Seamless blending | Multi-resolution approach</div>
+                </div>
+            </div>
+
+
+            <h3>Spongebob Custom Blend</h3>
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="multi_resolution_blending/spline/spong.jpg" alt="Spongebob Original 1">
+                    <div class="image-caption">Spongebob Image 1 (Original)</div>
+                    <div class="displacement-info">Source image 1 | Different expression</div>
+                </div>
+                <div class="image-item">
+                    <img src="multi_resolution_blending/spline/spongebob.jpg" alt="Spongebob Original 2">
+                    <div class="image-caption">Spongebob Image 2 (Original)</div>
+                    <div class="displacement-info">Source image 2 | Different pose</div>
+                </div>
+                <div class="image-item">
+                    <img src="multi_resolution_blending/results/spongebob_blend.png" alt="Spongebob Blend">
+                    <div class="image-caption">Spongebob Custom Blend Result</div>
+                    <div class="displacement-info">Custom blend | Circular mask</div>
+                </div>
+            </div>
+
+            <div class="success">
+                <h4>Blending Parameters and Results:</h4>
+                <ul>
+                    <li><strong>Frequency Levels:</strong> 6-7 levels for optimal smooth transitions</li>
+                    <li><strong>Base Sigma:</strong> σ₀ = 1.0 for initial blur level</li>
+                    <li><strong>Scale Factor:</strong> k = 2.0 for exponential blur progression</li>
+                    <li><strong>Mask Smoothing:</strong> 35.0 for effective feathering</li>
+                    <li><strong>Alignment:</strong> Manual point selection for precise image alignment</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="section">
+            <h2>Technical Implementation Summary</h2>
+            
+            <div class="performance-metric">
+                <h4>Key Algorithms Implemented:</h4>
+                <ul>
+                    <li><strong>Convolution:</strong> Four nested loops, two loops with NumPy, comparison with SciPy</li>
+                    <li><strong>Edge Detection:</strong> Finite difference operators, DoG filters, gradient computation</li>
+                    <li><strong>Unsharp Masking:</strong> Gaussian blur, high-frequency extraction, amplification</li>
+                    <li><strong>Hybrid Images:</strong> FFT-based filtering, frequency domain processing</li>
+                    <li><strong>Multi-Resolution Blending:</strong> Gaussian/Laplacian pyramids, mask-based blending</li>
+                </ul>
+            </div>
+
+            <div class="performance-metric">
+                <h4>Performance Optimizations:</h4>
+                <ul>
+                    <li><strong>FFT Implementation:</strong> Frequency domain filtering for O(n log n) complexity</li>
+                    <li><strong>NumPy Optimization:</strong> Vectorized operations for significant speedup</li>
+                    <li><strong>Memory Efficiency:</strong> In-place operations and optimized data structures</li>
+                    <li><strong>Parallel Processing:</strong> Multi-channel processing for color images</li>
+                </ul>
+            </div>
+
+        
+    <script src="project2_script.js"></script>
+</body>
+</html>
