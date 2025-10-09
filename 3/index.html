@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS180 Project 3: Image Mosaicing and Image Warping</title>
+    <link rel="stylesheet" href="project3_styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>CS180 Project 3: Image Mosaicing and Image Warping</h1>
+        <p style="text-align: center; font-size: 1.25rem; color: #64748b; margin-bottom: 40px;">
+            <strong>Author:</strong> Merrick Zheng | <strong>Date:</strong> Fall 2025
+        </p>
+
+    <!-- Part A.1: Shoot Pictures -->
+    <div class="section">
+        <h2>Part A.1: Shoot and Digitize Pictures</h2>
+        <p>I captured multiple sets of images with projective transformations by fixing the center of projection and rotating the camera. Each set has 40-70% overlap for robust registration.</p>
+        
+        <h3>Mosaic Image Sets</h3>
+        <div class="image-row">
+            <div class="image-item">
+                <img src="imgs/Mosaic1a.PNG" alt="Mosaic Set 1a">
+                <div class="caption">Mosaic Set 1 - Image A</div>
+            </div>
+            <div class="image-item">
+                <img src="imgs/Mosaic1b.PNG" alt="Mosaic Set 1b">
+                <div class="caption">Mosaic Set 1 - Image B</div>
+            </div>
+        </div>
+        
+        <div class="image-row">
+            <div class="image-item">
+                <img src="imgs/Mosaic2a.PNG" alt="Mosaic Set 2a">
+                <div class="caption">Mosaic Set 2 - Image A</div>
+            </div>
+            <div class="image-item">
+                <img src="imgs/Mosaic2b.PNG" alt="Mosaic Set 2b">
+                <div class="caption">Mosaic Set 2 - Image B</div>
+            </div>
+        </div>
+        
+        <div class="image-row">
+            <div class="image-item">
+                <img src="imgs/Mosaic3a.PNG" alt="Mosaic Set 3a">
+                <div class="caption">Mosaic Set 3 - Image A</div>
+            </div>
+            <div class="image-item">
+                <img src="imgs/Mosaic3b.PNG" alt="Mosaic Set 3b">
+                <div class="caption">Mosaic Set 3 - Image B</div>
+            </div>
+        </div>
+
+        <h3>Image Set 2: Rectification Images</h3>
+        <div class="image-row">
+            <div class="image-item">
+                <img src="imgs/Warp1.jpg" alt="Warp 1">
+                <div class="caption">Warp Image 1</div>
+            </div>
+            <div class="image-item">
+                <img src="imgs/Warp2.jpg" alt="Warp 2">
+                <div class="caption">Warp Image 2</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Part A.2: Recover Homographies -->
+    <div class="section">
+        <h2>Part A.2: Recover Homographies</h2>
+        
+        <h3>Implementation</h3>
+        <p>I implemented <code>computeH(im1_pts, im2_pts)</code> to recover the 3×3 homography matrix using least-squares.</p>
+        
+        <div class="highlight">
+            <strong>Algorithm:</strong>
+            <ol>
+                <li>Set up overdetermined system Ah = b with 2n equations for n point pairs</li>
+                <li>Each point (x₁,y₁) → (x₂,y₂) gives 2 equations</li>
+                <li>Solve using <code>np.linalg.lstsq</code> for robustness</li>
+                <li>Construct 3×3 matrix H with h₂₂ = 1</li>
+            </ol>
+        </div>
+
+        <h3>Point Correspondences</h3>
+        <div class="image-container">
+            <img src="imgs/correspondences_viz.png" alt="Point Correspondences" style="max-width: 95%;">
+            <div class="caption">Point correspondences between images (numbered 1-6+)</div>
+        </div>
+
+        <h3>System of Equations: Ah = b</h3>
+        
+        <p><strong>Equation formulation:</strong> For each point correspondence (x₁,y₁) → (x₂,y₂):</p>
+        <ul>
+            <li>x₂ = (h₀x₁ + h₁y₁ + h₂) / (h₆x₁ + h₇y₁ + 1)</li>
+            <li>y₂ = (h₃x₁ + h₄y₁ + h₅) / (h₆x₁ + h₇y₁ + 1)</li>
+        </ul>
+        <p>With n point pairs, we have 2n equations for 8 unknowns (h₀-h₇). Least-squares finds the best fit homography.</p>
+
+        <h3>Recovered Homography Matrix</h3>
+        <p>The homography matrix H is a 3×3 matrix (8 degrees of freedom with h₂₂=1) that maps points from Image 1 to Image 2 via p' = Hp.</p>
+        <pre>
+H = [[ 1.358    -0.273   -599.067]
+     [ 0.169     1.146   -133.718]
+     [ 0.0003   -0.0002    1.000 ]]
+
+Residual sum of squares: 2137.08 pixels²
+Mean reprojection error: 16.32 pixels
+        </pre>
+    </div>
+
+    <!-- Part A.3: Warp Images -->
+    <div class="section">
+        <h2>Part A.3: Warp the Images</h2>
+        
+        <h3>Implementation</h3>
+        <p>I implemented two interpolation methods from scratch using inverse warping to avoid holes:</p>
+        
+        <table>
+            <tr>
+                <th>Method</th>
+                <th>Description</th>
+                <th>Speed</th>
+                <th>Quality</th>
+            </tr>
+            <tr>
+                <td><strong>Nearest Neighbor</strong></td>
+                <td>Round coordinates to nearest pixel</td>
+                <td>Fast</td>
+                <td>Sharp edges, can be blocky</td>
+            </tr>
+            <tr>
+                <td><strong>Bilinear</strong></td>
+                <td>Weighted average of 4 neighboring pixels</td>
+                <td>Slower</td>
+                <td>Smoother, better for diagonal lines</td>
+            </tr>
+        </table>
+
+        <h3>Rectification Examples</h3>
+        <p>I tested the warping functions by rectifying images with known rectangular objects. The homography transforms distorted rectangles into perfect rectangles.</p>
+
+        <h4>Rectification 1</h4>
+        <div class="image-container">
+            <img src="imgs/warp1_with_points.png" alt="Warp1 with points" style="max-width: 70%;">
+            <div class="caption">Warp1 Original - 4 corners of rectangular region selected</div>
+        </div>
+        <div class="image-row">
+            <div class="image-item">
+                <img src="imgs/warp1_rectified_nn.png" alt="Warp1 NN">
+                <div class="caption">Rectified - Nearest Neighbor</div>
+            </div>
+            <div class="image-item">
+                <img src="imgs/warp1_rectified_bil.png" alt="Warp1 Bilinear">
+                <div class="caption">Rectified - Bilinear</div>
+            </div>
+        </div>
+
+        <h4>Rectification 2</h4>
+        <div class="image-container">
+            <img src="imgs/warp2_with_points.png" alt="Warp2 with points" style="max-width: 70%;">
+            <div class="caption">Warp2 Original - 4 corners of rectangular region selected</div>
+        </div>
+        <div class="image-row">
+            <div class="image-item">
+                <img src="imgs/warp2_rectified_nn.png" alt="Warp2 NN">
+                <div class="caption">Rectified - Nearest Neighbor</div>
+            </div>
+            <div class="image-item">
+                <img src="imgs/warp2_rectified_bil.png" alt="Warp2 Bilinear">
+                <div class="caption">Rectified - Bilinear</div>
+            </div>
+        </div>
+
+        <div class="highlight">
+            <strong>Comparison:</strong> Bilinear interpolation produces noticeably smoother results, especially visible in diagonal edges and curved features. Nearest neighbor is faster but can show aliasing artifacts. For high-quality mosaics, bilinear is preferred.
+        </div>
+    </div>
+
+    <!-- Part A.4: Blend Images -->
+    <div class="section">
+        <h2>Part A.4: Blend Images into Mosaics</h2>
+        
+        <h3>Blending Algorithm</h3>
+        <p>I implemented <strong>multi-resolution blending using Laplacian pyramids with distance transform masks</strong> to eliminate seam artifacts:</p>
+        
+        <div class="highlight">
+            <strong>Multi-Resolution Blending Procedure:</strong>
+            <ol>
+                <li><strong>Distance Transform Masks:</strong> Create binary masks from valid pixels, apply distance transform to measure distance from edges, normalize to [0,1] for smooth falloff</li>
+                <li><strong>Laplacian Pyramids:</strong> Decompose images into 4-level pyramids (frequency bands)</li>
+                <li><strong>Gaussian Mask Pyramid:</strong> Create pyramid of blending masks</li>
+                <li><strong>Pyramid Blending:</strong> At each level, blend using: blend[i] = img1[i] × mask + img2[i] × (1-mask)</li>
+                <li><strong>Reconstruction:</strong> Reconstruct final image from blended pyramid</li>
+                <li><strong>Cropping:</strong> Remove black borders automatically</li>
+            </ol>
+        </div>
+
+        <p><strong>Why This Works:</strong> Low frequencies (smooth regions) blend gradually while high frequencies (details/textures) transition sharply. Distance transform ensures smooth weight falloff at edges. Result: seamless mosaics with no visible seams!</p>
+
+        <h3>Mosaic 1: Indoor Scene</h3>
+        
+        <h4>Source Images</h4>
+        <div class="image-row">
+            <div class="image-item">
+                <img src="imgs/mosaic_source_1.png" alt="Source 1">
+                <div class="caption">Source Image 1</div>
+            </div>
+            <div class="image-item">
+                <img src="imgs/mosaic_source_2.png" alt="Source 2">
+                <div class="caption">Source Image 2 (Reference)</div>
+            </div>
+        </div>
+        
+        <h4>Mosaic Results</h4>
+        <div class="image-row">
+            <div class="image-item">
+                <img src="imgs/mosaic_nn.png" alt="Mosaic NN">
+                <div class="caption">Mosaic - Nearest Neighbor</div>
+            </div>
+            <div class="image-item">
+                <img src="imgs/mosaic_bilinear.png" alt="Mosaic Bilinear">
+                <div class="caption">Mosaic - Bilinear (Smoother)</div>
+            </div>
+        </div>
+
+        <h3>Mosaic 2: Set 2</h3>
+        <div class="image-container">
+            <img src="imgs/mosaic_bilinear_1.png" alt="Mosaic 2" style="max-width: 90%;">
+            <div class="caption">Mosaic 2 - Bilinear interpolation with multi-resolution blending</div>
+        </div>
+
+        <h3>Mosaic 3: Set 3</h3>
+        <div class="image-container">
+            <img src="imgs/mosaic_bilinear_2.png" alt="Mosaic 3" style="max-width: 90%;">
+            <div class="caption">Mosaic 3 - Bilinear interpolation with multi-resolution blending</div>
+        </div>
+    </div>
+
+        <!-- Conclusion -->
+        <div class="section">
+            <h2>Conclusion</h2>
+            <p>This project demonstrated the complete pipeline for image mosaicing: from capturing images with projective transformations, recovering homographies via point correspondences, implementing warping with custom interpolation, to advanced multi-resolution blending.
+
+    <script src="project3_script.js"></script>
+</body>
+</html>
+
