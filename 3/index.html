@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>CS180 Project 3: Image Mosaicing and Image Warping</h1>
+    <h1>CS180 Project 3: Image Mosaicing and Image Warping</h1>
         <p style="text-align: center; font-size: 1.25rem; color: #64748b; margin-bottom: 40px;">
             <strong>Author:</strong> Merrick Zheng | <strong>Date:</strong> Fall 2025
         </p>
@@ -237,11 +237,187 @@ Mean reprojection error: 16.32 pixels
         </div>
     </div>
 
-        <!-- Conclusion -->
-        <div class="section">
-            <h2>Conclusion</h2>
-            <p>This project demonstrated the complete pipeline for image mosaicing: from capturing images with projective transformations, recovering homographies via point correspondences, implementing warping with custom interpolation, to advanced multi-resolution blending.
+    <!-- Part B: Automatic Mosaicing using MOPS -->
+    <div class="section">
+        <h2>Part B: Automatic Mosaicing using MOPS</h2>
+        <p>Part B focuses on implementing the MOPS algorithm from Brown et al.'s paper "Multi-Image Matching using Multi-Scale Oriented Patches" to achieve automatic image mosaicing without manual point selection.</p>
+        <p><strong>Implementation Overview:</strong> This section demonstrates a complete automatic mosaicing pipeline that eliminates the need for manual intervention. The MOPS algorithm automatically detects distinctive features, establishes correspondences between images, and estimates robust homographies using RANSAC to create seamless panoramic compositions.</p>
+    </div>
 
+    <!-- B.1: Harris Corner Detection with ANMS -->
+    <div class="section">
+        <h2>B.1: Harris Corner Detection with ANMS</h2>
+        <p>The initial step in automatic mosaicing requires identifying reliable interest points within the images. This is accomplished through Harris corner detection, followed by Adaptive Non-Maximal Suppression (ANMS) to select the most distinctive corners.</p>
+        
+        <div class="highlight">
+            <strong>Deliverables:</strong>
+            <ul>
+                <li>Show detected corners overlaid on image, with and without ANMS</li>
+                <li>Demonstrate the effectiveness of ANMS in corner selection</li>
+        </ul>
+        </div>
+
+        <h3>Harris Corner Detection Results</h3>
+        <div class="image-container">
+            <img src="imgs/Image 3aANS.png" alt="Harris Corners with ANMS">
+            <div class="caption">Harris corners detected with ANMS for Image 3a</div>
+        </div>
+        
+        <div class="image-container">
+            <img src="imgs/Image 3bANS.png" alt="Harris Corners with ANMS">
+            <div class="caption">Harris corners detected with ANMS for Image 3b</div>
+        </div>
+    </div>
+
+    <!-- B.2: Feature Descriptor Extraction -->
+    <div class="section">
+        <h2>B.2: Feature Descriptor Extraction</h2>
+        <p>Each detected corner requires a unique descriptor that can be reliably matched across different images. This is achieved by extracting 8x8 feature descriptors from 40x40 windows around each corner, followed by bias/gain normalization.</p>
+        
+        <div class="highlight">
+            <strong>Deliverables:</strong>
+            <ul>
+                <li>Extract normalized 8x8 feature descriptors</li>
+                <li>Show several extracted features</li>
+        </ul>
+        </div>
+
+        <h3>Feature Descriptor Visualization</h3>
+        <div class="image-container">
+            <img src="imgs/Image 3aDescriptor.png" alt="Feature Descriptors">
+            <div class="caption">Feature descriptors extracted from keypoints with 8x8 patches from 40x40 windows, showing normalized descriptors</div>
+        </div>
+    </div>
+
+    <!-- B.3: Feature Matching using Lowe Ratio Test -->
+    <div class="section">
+        <h2>B.3: Feature Matching using Lowe Ratio Test</h2>
+        <p>Feature matching between image pairs is accomplished using Lowe's ratio test to establish reliable correspondences while filtering out ambiguous matches.</p>
+        
+        <div class="highlight">
+            <strong>Deliverables:</strong>
+            <ul>
+                <li>Show matched features between image pairs</li>
+                <li>Demonstrate effectiveness of Lowe ratio test</li>
+        </ul>
+        </div>
+
+        <h3>Feature Matching Results</h3>
+        <div class="image-container">
+            <img src="imgs/Image 1a ↔ Image 1bMatches.png" alt="Feature Matches 1">
+            <div class="caption">Feature matches between Image 1a and Image 1b using Lowe ratio test</div>
+        </div>
+        
+        <div class="image-container">
+            <img src="imgs/Image 2a ↔ Image 2bMatches.png" alt="Feature Matches 2">
+            <div class="caption">Feature matches between Image 2a and Image 2b using Lowe ratio test</div>
+        </div>
+        
+        <div class="image-container">
+            <img src="imgs/Image 3a ↔ Image 3bMatches.png" alt="Feature Matches 3">
+            <div class="caption">Feature matches between Image 3a and Image 3b using Lowe ratio test</div>
+        </div>
+    </div>
+
+    <!-- B.4: RANSAC for Robust Homography and Automatic Mosaics -->
+    <div class="section">
+        <h2>B.4: RANSAC for Robust Homography and Automatic Mosaics</h2>
+        <p>Despite the filtering provided by the Lowe ratio test, some false matches inevitably remain. RANSAC (RANdom SAmple Consensus) is implemented to handle these outliers and create robust automatic mosaics.</p>
+        
+        <div class="highlight">
+            <strong>Deliverables:</strong>
+            <ul>
+                <li>Implement 4-point RANSAC from scratch</li>
+                <li>Show comparison of stitching manually and automatically</li>
+                <li>Create ≥3 automatic mosaics</li>
+            </ul>
+        </div>
+
+        <h3>RANSAC Results</h3>
+        <div class="image-container">
+            <img src="imgs/Image 1a ↔ Image 1bRANSAC.png" alt="RANSAC Matches 1">
+            <div class="caption">RANSAC inlier matches for Image 1a ↔ Image 1b showing robust homography estimation</div>
+        </div>
+        
+        <div class="image-container">
+            <img src="imgs/Image 2a ↔ Image 2bRANSAC.png" alt="RANSAC Matches 2">
+            <div class="caption">RANSAC inlier matches for Image 2a ↔ Image 2b showing robust homography estimation</div>
+        </div>
+        
+        <div class="image-container">
+            <img src="imgs/Image 3a ↔ Image 3bRANSAC.png" alt="RANSAC Matches 3">
+            <div class="caption">RANSAC inlier matches for Image 3a ↔ Image 3b showing robust homography estimation</div>
+        </div>
+
+        <h3>Manual vs Automatic Stitching Comparison</h3>
+        <p><strong>Direct visual comparison of manual vs automatic mosaicing for all three image pairs:</strong></p>
+
+        <h4>Mosaic 1: Image 1a ↔ Image 1b</h4>
+        <div class="image-row">
+            <div class="image-item">
+                <h4>🔧 Manual</h4>
+                <img src="imgs/mosaic_1_complete.png" alt="Manual Mosaic 1" style="width: 100%; height: auto;">
+                <div class="caption">Manual homography estimation</div>
+            </div>
+            <div class="image-item">
+                <h4>🤖 Automatic</h4>
+                <img src="imgs/automatic_mosaic_3a_final.png" alt="Automatic Mosaic 1" style="width: 100%; height: auto;">
+                <div class="caption">MOPS + RANSAC automatic</div>
+            </div>
+        </div>
+
+        <h4>Mosaic 2: Image 2a ↔ Image 2b</h4>
+        <div class="image-row">
+            <div class="image-item">
+                <h4>🔧 Manual</h4>
+                <img src="imgs/mosaic_bilinear_1.png" alt="Manual Mosaic 2" style="width: 100%; height: auto;">
+                <div class="caption">Manual homography estimation</div>
+            </div>
+            <div class="image-item">
+                <h4>🤖 Automatic</h4>
+                <img src="imgs/automatic_mosaic_1a_final.png" alt="Automatic Mosaic 2" style="width: 100%; height: auto;">
+                <div class="caption">MOPS + RANSAC automatic</div>
+            </div>
+        </div>
+
+        <h4>Mosaic 3: Image 3a ↔ Image 3b</h4>
+        <div class="image-row">
+            <div class="image-item">
+                <h4>🔧 Manual</h4>
+                <img src="imgs/mosaic_bilinear_2.png" alt="Manual Mosaic 3" style="width: 100%; height: auto;">
+                <div class="caption">Manual homography estimation</div>
+            </div>
+            <div class="image-item">
+                <h4>🤖 Automatic</h4>
+                <img src="imgs/automatic_mosaic_2a_final.png" alt="Automatic Mosaic 3" style="width: 100%; height: auto;">
+                <div class="caption">MOPS + RANSAC automatic</div>
+            </div>
+        </div>
+
+        <div class="highlight">
+            <h4>Comparison Analysis:</h4>
+            <p>The comparison between manual and automatic mosaicing reveals that both approaches achieve comparable visual quality and geometric accuracy. The automatic method demonstrates superior efficiency by eliminating manual point selection, while maintaining robustness across varying lighting conditions and perspective changes. The MOPS algorithm's ability to process multiple image pairs simultaneously makes it particularly advantageous for large-scale panorama creation, representing a significant advancement in computational photography techniques.</p>
+        </div>
+
+        <h3>Automatic Mosaics (≥3 Required)</h3>
+        <div class="image-container">
+            <h4>Automatic Mosaic 1 (Image 1a ↔ Image 1b)</h4>
+            <img src="imgs/automatic_mosaic_3a_final.png" alt="Automatic Mosaic 1" style="max-width: 90%;">
+            <div class="caption">Automatic mosaic created using MOPS algorithm and RANSAC homography</div>
+        </div>
+
+        <div class="image-container">
+            <h4>Automatic Mosaic 2 (Image 2a ↔ Image 2b)</h4>
+            <img src="imgs/automatic_mosaic_1a_final.png" alt="Automatic Mosaic 2" style="max-width: 90%;">
+            <div class="caption">Second automatic mosaic demonstrating robust feature matching</div>
+        </div>
+
+        <div class="image-container">
+            <h4>Automatic Mosaic 3 (Image 3a ↔ Image 3b)</h4>
+            <img src="imgs/automatic_mosaic_2a_final.png" alt="Automatic Mosaic 3" style="max-width: 90%;">
+            <div class="caption">Third automatic mosaic showing panoramic stitching capabilities</div>
+        </div>
+    </div>
     <script src="project3_script.js"></script>
 </body>
 </html>
