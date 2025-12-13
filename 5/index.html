@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS180 Project 5: Diffusion Models</title>
+    <link rel="stylesheet" href="project5_styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>CS180 Project 5: Diffusion Models</h1>
+        <p style="text-align: center; font-size: 1.25rem; color: #64748b; margin-bottom: 40px;">
+            <strong>Author:</strong> Merrick Zheng | <strong>Date:</strong> Fall 2025
+        </p>
+
+        <!-- Part 0: Setup -->
+        <div class="section">
+            <h2>Part 0: Setup</h2>
+            <p>This section covers the setup for using the DeepFloyd IF diffusion model for text-to-image generation. The DeepFloyd IF model is a two-stage model where the first stage produces 64x64 images and the second stage upscales them to 256x256.</p>
+
+            <h3>Text Prompts and Embeddings</h3>
+            <p>The following text prompts were used to generate embeddings for the project:</p>
+            <div class="highlight">
+                <h4>Generated Embeddings:</h4>
+                <ul style="columns: 2; column-gap: 40px;">
+                    <li>'a high quality photo'</li>
+                    <li>'an oil painting of an old man with a long beard'</li>
+                    <li>'an oil painting of people sitting around a campfire at night'</li>
+                    <li>'a realistic portrait of a woman with flowing hair'</li>
+                    <li>'a wide landscape of a river flowing through a valley'</li>
+                    <li>"a detailed painting of a lion's face"</li>
+                    <li>'a sunset savannah with acacia trees'</li>
+                    <li>'a large ancient stone statue'</li>
+                    <li>'a busy marketplace with many people'</li>
+                    <li>'a tall gothic cathedral'</li>
+                    <li>'a dense forest canopy seen from above'</li>
+                    <li>'a calm portrait of a middle-aged man'</li>
+                    <li>'a tiger snarling with sharp teeth'</li>
+                    <li>'a fluffy white puppy'</li>
+                    <li>'a skull with glowing eyes'</li>
+                    <li>'a medieval stone castle on a hill'</li>
+                    <li>'a wolf howling'</li>
+                    <li>'a peaceful snowy mountain landscape'</li>
+                    <li>"a woman's face looking forward"</li>
+                    <li>'a bowl of ramen noodles'</li>
+                    <li>'a human face smiling'</li>
+                    <li>'a gothic stone tower at sunset'</li>
+                    <li>'a foggy photograph of a tall bell tower'</li>
+                    <li>'a watercolor painting of an old university tower'</li>
+                    <li>'a realistic photograph'</li>
+                    <li>'a detailed pencil sketch'</li>
+                    <li>'a cinematic photograph with dramatic lighting'</li>
+                    <li>'an oil painting of a snowy mountain village'</li>
+                </ul>
+            </div>
+
+            <h3>Random Seed</h3>
+            <div class="highlight">
+                <p><strong>Random Seed Used:</strong> 100</p>
+                <p>This seed was used consistently across all subsequent parts of the project to ensure reproducibility.</p>
+            </div>
+
+            <h3>Generated Images</h3>
+            <p>Three prompts were selected to generate images with the DeepFloyd IF model. Images were generated using two different <code>num_inference_steps</code> values to compare the quality and relationship to the text prompts. Each image below contains all three generated images for the chosen prompts.</p>
+
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/Part0Inf20.png" alt="Inference Steps 20 - All 3 Prompts">
+                    <div class="caption">num_inference_steps = 20</div>
+                    <p style="font-size: 0.9em; color: #64748b; margin-top: 8px;">Contains all 3 chosen prompts</p>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/Part0Inf80.png" alt="Inference Steps 80 - All 3 Prompts">
+                    <div class="caption">num_inference_steps = 80</div>
+                    <p style="font-size: 0.9em; color: #64748b; margin-top: 8px;">Contains all 3 chosen prompts</p>
+                </div>
+            </div>
+            <div class="highlight">
+                <h4>Reflection:</h4>
+                <p>The images generated with <code>num_inference_steps = 80</code> appear sharper and more detailed compared to those generated with <code>num_inference_steps = 20</code>. This is expected because more inference steps allow the diffusion model to perform more iterative denoising operations, resulting in higher quality outputs that better match the text prompts. The additional steps give the model more opportunities to refine details and reduce artifacts.</p>
+            </div>
+        </div>
+
+        <!-- Part 1: Sampling Loops -->
+        <div class="section">
+            <h2>Part 1: Sampling Loops</h2>
+            <p>In this part of the project, I implemented custom sampling loops that use the pretrained DeepFloyd denoisers to produce high-quality images. These sampling loops were then modified to solve different tasks such as inpainting and producing optical illusions.</p>
+
+
+            <!-- Part 1.1: Implementing the Forward Process -->
+            <h3>1.1: Implementing the Forward Process</h3>
+            <p>The forward process adds Gaussian noise to a clean image at a given timestep. The algorithm scales the original image and adds scaled noise, where the scaling factors depend on the cumulative product of noise coefficients (ᾱ_t). As the timestep increases, more noise is added and the image becomes progressively noisier.</p>
+            <pre><code>alpha_bar_t = alphas_cumprod[t]
+im_noisy = sqrt(alpha_bar_t) * im + sqrt(1 - alpha_bar_t) * eps</code></pre>
+            <p>Campanile at different noise levels showing the forward process:</p>
+            <div class="image-container">
+                <img src="imgs/Part1/1_1.png" alt="Campanile at noise levels t=250, 500, 750">
+            </div>
+        </div>
+
+        <!-- Part 1.2: Classical Denoising -->
+        <div class="section">
+            <h3>1.2: Classical Denoising</h3>
+            <p>Gaussian blur denoising results for the noisy Campanile images at different timesteps:</p>
+            <div class="image-container">
+                <img src="imgs/Part1/1Point2.png" alt="Noisy vs Gaussian-Denoised at t=250, 500, 750">
+            </div>
+        </div>
+
+        <!-- Part 1.3: One-Step Denoising -->
+        <div class="section section-1-3">
+            <h3>1.3: One-Step Denoising</h3>
+            <p>The one-step denoising algorithm uses a pretrained UNet to predict the noise in a noisy image. Given the noisy image and timestep, the UNet outputs a noise estimate conditioned on the text prompt. We then invert the forward process formula to estimate the clean image by subtracting the predicted noise, properly scaled by the noise coefficients.</p>
+            <pre><code>noise_est = stage_1.unet(im_noisy, t, encoder_hidden_states=prompt_embeds)
+x0_est = (im_noisy - sqrt(1 - alpha_bar_t) * noise_est) / sqrt(alpha_bar_t)</code></pre>
+            <p>Noisy and denoised images using the pretrained diffusion model for timesteps t = [250, 500, 750]:</p>
+
+            <h4>t = 250</h4>
+            <div class="image-container">
+                <img src="imgs/Part1/1_3_one_step_denoise_t250.png" alt="Noisy and Denoised t=250">
+            </div>
+
+            <h4>t = 500</h4>
+            <div class="image-container">
+                <img src="imgs/Part1/1_3_one_step_denoise_t500.png" alt="Noisy and Denoised t=500">
+            </div>
+
+            <h4>t = 750</h4>
+            <div class="image-container">
+                <img src="imgs/Part1/1_3_one_step_denoise_t750.png" alt="Noisy and Denoised t=750">
+            </div>
+        </div>
+
+        <!-- Part 1.4: Iterative Denoising -->
+        <div class="section">
+            <h3>1.4: Iterative Denoising</h3>
+            <p>Iterative denoising (DDPM) performs multiple denoising steps in sequence, starting from a noisy image and gradually reducing noise at each timestep. At each iteration, the algorithm estimates the noise, predicts the clean image, and then computes the next less-noisy image using the DDPM update rule. This process continues until reaching timestep 0, resulting in a clean image. The key is computing the coefficients for combining the predicted clean image and current noisy image based on the noise schedule.</p>
+            <pre><code>for i in range(i_start, len(timesteps) - 1):
+    noise_est = stage_1.unet(image, t, encoder_hidden_states=prompt_embeds)
+    pred_prev_image = compute_prev_step(image, noise_est, alpha_t, beta_t)</code></pre>
+            <p>Noisy Campanile every 5th loop of iterative denoising (gradually becoming less noisy):</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_4_iter_step_10_t690.png" alt="Iteration 10">
+                    <div class="caption">Iteration 10</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_4_iter_step_15_t540.png" alt="Iteration 15">
+                    <div class="caption">Iteration 15</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_4_iter_step_20_t390.png" alt="Iteration 20">
+                    <div class="caption">Iteration 20</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_4_iter_step_25_t240.png" alt="Iteration 25">
+                    <div class="caption">Iteration 25</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_4_iter_step_30_t90.png" alt="Iteration 30">
+                    <div class="caption">Iteration 30</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_4_iter_step_32_t30.png" alt="Iteration 32">
+                    <div class="caption">Iteration 32</div>
+                </div>
+            </div>
+
+            <h4>Final Predicted Clean Image (Iterative Denoising)</h4>
+            <div class="image-container">
+                <img src="imgs/Part1/1_4_iterative_clean.png" alt="Final clean image from iterative denoising">
+            </div>
+
+            <h4>Comparison: Single Step vs Iterative vs Gaussian Blur</h4>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_4_one_step.png" alt="Single step denoising">
+                    <div class="caption">Single Step Denoising</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_4_iterative_clean.png" alt="Iterative denoising">
+                    <div class="caption">Iterative Denoising</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_4_gaussian_blur.png" alt="Gaussian blur">
+                    <div class="caption">Gaussian Blur</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 1.5: Diffusion Model Sampling -->
+        <div class="section">
+            <h3>1.5: Diffusion Model Sampling</h3>
+            <p>5 sampled images generated from random noise using the prompt "a high quality photo":</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_5_sample_0.png" alt="Sample 0">
+                    <div class="caption">Sample 0</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_5_sample_1.png" alt="Sample 1">
+                    <div class="caption">Sample 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_5_sample_2.png" alt="Sample 2">
+                    <div class="caption">Sample 2</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_5_sample_3.png" alt="Sample 3">
+                    <div class="caption">Sample 3</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_5_sample_4.png" alt="Sample 4">
+                    <div class="caption">Sample 4</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 1.6: Classifier-Free Guidance (CFG) -->
+        <div class="section">
+            <h3>1.6: Classifier-Free Guidance (CFG)</h3>
+            <p>Classifier-Free Guidance improves image quality by combining conditional and unconditional noise estimates. The algorithm runs the UNet twice: once with the text prompt (conditional) and once with an empty prompt (unconditional). The final noise estimate is computed by interpolating between these two estimates, with a guidance scale (γ) controlling the strength. When γ > 1, the model is pushed further in the direction of the conditional estimate, resulting in images that better match the prompt while maintaining diversity.</p>
+            <pre><code>cfg_noise_est = uncond_noise_est + scale * (cond_noise_est - uncond_noise_est)
+x0_est = (image - sqrt(1 - alpha_bar_t) * cfg_noise_est) / sqrt(alpha_bar_t)</code></pre>
+            <p>5 images of "a high quality photo" with CFG scale γ = 7:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_6_cfg_sample_1.png" alt="CFG Sample 1">
+                    <div class="caption">CFG Sample 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_6_cfg_sample_2.png" alt="CFG Sample 2">
+                    <div class="caption">CFG Sample 2</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_6_cfg_sample_3.png" alt="CFG Sample 3">
+                    <div class="caption">CFG Sample 3</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_6_cfg_sample_4.png" alt="CFG Sample 4">
+                    <div class="caption">CFG Sample 4</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_6_cfg_sample_5.png" alt="CFG Sample 5">
+                    <div class="caption">CFG Sample 5</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 1.7: Image-to-image Translation -->
+        <div class="section">
+            <h3>1.7: Image-to-image Translation</h3>
+            <p>Edits of the Campanile image at noise levels [1, 3, 5, 7, 10, 20] with the conditional text prompt 'a high quality photo':</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_campanile_original.png" alt="Original Campanile">
+                    <div class="caption">Original</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_campanile_i1_t960.png" alt="Noise level 1">
+                    <div class="caption">Noise level 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_campanile_i3_t900.png" alt="Noise level 3">
+                    <div class="caption">Noise level 3</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_campanile_i5_t840.png" alt="Noise level 5">
+                    <div class="caption">Noise level 5</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_campanile_i7_t780.png" alt="Noise level 7">
+                    <div class="caption">Noise level 7</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_campanile_i10_t690.png" alt="Noise level 10">
+                    <div class="caption">Noise level 10</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_campanile_i20_t390.png" alt="Noise level 20">
+                    <div class="caption">Noise level 20</div>
+                </div>
+            </div>
+
+            <h4>Edits of 2 Test Images</h4>
+            <p>Test Image 1:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img1_original.png" alt="Original Image 1">
+                    <div class="caption">Original</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img1_i1_t960.png" alt="Noise level 1">
+                    <div class="caption">Noise level 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img1_i3_t900.png" alt="Noise level 3">
+                    <div class="caption">Noise level 3</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img1_i5_t840.png" alt="Noise level 5">
+                    <div class="caption">Noise level 5</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img1_i7_t780.png" alt="Noise level 7">
+                    <div class="caption">Noise level 7</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img1_i10_t690.png" alt="Noise level 10">
+                    <div class="caption">Noise level 10</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img1_i20_t390.png" alt="Noise level 20">
+                    <div class="caption">Noise level 20</div>
+                </div>
+            </div>
+
+            <p>Test Image 2:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img2_original.png" alt="Original Image 2">
+                    <div class="caption">Original</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img2_i1_t960.png" alt="Noise level 1">
+                    <div class="caption">Noise level 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img2_i3_t900.png" alt="Noise level 3">
+                    <div class="caption">Noise level 3</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img2_i5_t840.png" alt="Noise level 5">
+                    <div class="caption">Noise level 5</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img2_i7_t780.png" alt="Noise level 7">
+                    <div class="caption">Noise level 7</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img2_i10_t690.png" alt="Noise level 10">
+                    <div class="caption">Noise level 10</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_img2_i20_t390.png" alt="Noise level 20">
+                    <div class="caption">Noise level 20</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 1.7.1: Editing Hand-Drawn and Web Images -->
+        <div class="section">
+            <h3>1.7.1: Editing Hand-Drawn and Web Images</h3>
+            <p>1 image from the web, edited at noise levels [1, 3, 5, 7, 10, 20]:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_web_original.png" alt="Original Web Image">
+                    <div class="caption">Original</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_web_i1_t960.png" alt="Noise level 1">
+                    <div class="caption">Noise level 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_web_i3_t900.png" alt="Noise level 3">
+                    <div class="caption">Noise level 3</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_web_i5_t840.png" alt="Noise level 5">
+                    <div class="caption">Noise level 5</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_web_i7_t780.png" alt="Noise level 7">
+                    <div class="caption">Noise level 7</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_web_i10_t690.png" alt="Noise level 10">
+                    <div class="caption">Noise level 10</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_web_i20_t390.png" alt="Noise level 20">
+                    <div class="caption">Noise level 20</div>
+                </div>
+            </div>
+
+            <p>2 hand-drawn images, edited at noise levels [1, 3, 5, 7, 10, 20]:</p>
+            <p>Hand-Drawn Image 1:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw1_original.png" alt="Original Draw 1">
+                    <div class="caption">Original</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw1_i1_t960.png" alt="Noise level 1">
+                    <div class="caption">Noise level 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw1_i3_t900.png" alt="Noise level 3">
+                    <div class="caption">Noise level 3</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw1_i5_t840.png" alt="Noise level 5">
+                    <div class="caption">Noise level 5</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw1_i7_t780.png" alt="Noise level 7">
+                    <div class="caption">Noise level 7</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw1_i10_t690.png" alt="Noise level 10">
+                    <div class="caption">Noise level 10</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw1_i20_t390.png" alt="Noise level 20">
+                    <div class="caption">Noise level 20</div>
+                </div>
+            </div>
+
+            <p>Hand-Drawn Image 2:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw2_original.png" alt="Original Draw 2">
+                    <div class="caption">Original</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw2_i1_t960.png" alt="Noise level 1">
+                    <div class="caption">Noise level 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw2_i3_t900.png" alt="Noise level 3">
+                    <div class="caption">Noise level 3</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw2_i5_t840.png" alt="Noise level 5">
+                    <div class="caption">Noise level 5</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw2_i7_t780.png" alt="Noise level 7">
+                    <div class="caption">Noise level 7</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw2_i10_t690.png" alt="Noise level 10">
+                    <div class="caption">Noise level 10</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_1_draw2_i20_t390.png" alt="Noise level 20">
+                    <div class="caption">Noise level 20</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 1.7.2: Inpainting -->
+        <div class="section">
+            <h3>1.7.2: Inpainting</h3>
+            <p>Inpainting (following RePaint) generates new content in masked regions while preserving the original image elsewhere. The algorithm starts from pure noise and performs iterative denoising with CFG. At each timestep, after computing the denoised image, it forces the pixels outside the mask to match the original image with the appropriate amount of noise added for that timestep. This ensures the unmasked regions remain unchanged while the masked region is filled with generated content that matches the prompt.</p>
+            <pre><code>noisy_orig_t = forward(original_image, t)
+image = mask * image + (1.0 - mask) * noisy_orig_t</code></pre>
+            <p>For the custom images, I had to lower the CFG scale and increase the number of inference steps to achieve better results.</p>
+            <p>The Campanile inpainted:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_2_campanile_original.png" alt="Original Campanile">
+                    <div class="caption">Original</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_2_campanile_mask.png" alt="Campanile Mask">
+                    <div class="caption">Mask</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_2_campanile_inpaint.png" alt="Campanile Inpainted">
+                    <div class="caption">Inpainted</div>
+                </div>
+            </div>
+
+            <p>2 custom images edited with inpainting:</p>
+            <p>Image 1:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_2_img1_original.png" alt="Original Image 1">
+                    <div class="caption">Original</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_2_img1_mask.png" alt="Mask 1">
+                    <div class="caption">Mask</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_2_img1_inpaint.png" alt="Inpainted Image 1">
+                    <div class="caption">Inpainted</div>
+                </div>
+            </div>
+
+            <p>Image 2:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_2_img2_original.png" alt="Original Image 2">
+                    <div class="caption">Original</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_2_img2_mask.png" alt="Mask 2">
+                    <div class="caption">Mask</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_2_img2_inpaint.png" alt="Inpainted Image 2">
+                    <div class="caption">Inpainted</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 1.7.3: Text-Conditional Image-to-image Translation -->
+        <div class="section">
+            <h3>1.7.3: Text-Conditional Image-to-image Translation</h3>
+            <p>Edits of 2 test images using text-conditional image-to-image translation at noise levels [1, 3, 5, 7, 10, 20]:</p>
+            
+            <p>Test Image 1:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_3_img1_1.png" alt="Noise level 1">
+                    <div class="caption">Noise level 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_3_img1_3.png" alt="Noise level 3">
+                    <div class="caption">Noise level 3</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_3_img1_5.png" alt="Noise level 5">
+                    <div class="caption">Noise level 5</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_3_img1_7.png" alt="Noise level 7">
+                    <div class="caption">Noise level 7</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_3_img1_10.png" alt="Noise level 10">
+                    <div class="caption">Noise level 10</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_3_img1_20.png" alt="Noise level 20">
+                    <div class="caption">Noise level 20</div>
+                </div>
+            </div>
+
+            <p>Test Image 2:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_3_img2_1.png" alt="Noise level 1">
+                    <div class="caption">Noise level 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_3_img2_3.png" alt="Noise level 3">
+                    <div class="caption">Noise level 3</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_3_img2_5.png" alt="Noise level 5">
+                    <div class="caption">Noise level 5</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_3_img2_7.png" alt="Noise level 7">
+                    <div class="caption">Noise level 7</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_3_img2_10.png" alt="Noise level 10">
+                    <div class="caption">Noise level 10</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_7_3_img2_20.png" alt="Noise level 20">
+                    <div class="caption">Noise level 20</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 1.8: Visual Anagrams -->
+        <div class="section">
+            <h3>1.8: Visual Anagrams</h3>
+            <p>Visual anagrams create images that appear as one thing when viewed normally and another when flipped upside down. The algorithm computes two noise estimates: one from prompt p1 on the normal image, and one from prompt p2 on the vertically flipped image. After flipping the second noise estimate back, the two estimates are averaged. This creates a single image that incorporates features from both prompts, with different features dominating depending on orientation due to the averaging process.</p>
+            <pre><code>eps1 = cfg_noise(x, t, p1)
+eps2_flip = cfg_noise(flip(x), t, p2)
+eps = 0.5 * (eps1 + flip(eps2_flip))</code></pre>
+            <p>2 illusions that change appearance when flipped upside down:</p>
+            
+            <h4>Illusion 1</h4>
+            <div class="highlight">
+                <p><strong>Prompts:</strong> p1 = "a detailed painting of a lion's face", p2 = "a sunset savannah with acacia trees"</p>
+            </div>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_8_illusion1.png" alt="Illusion 1">
+                    <div class="caption">Illusion 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_8_illusion1_flipped.png" alt="Illusion 1 Flipped">
+                    <div class="caption">Illusion 1 (Flipped)</div>
+                </div>
+            </div>
+
+            <h4>Illusion 2</h4>
+            <div class="highlight">
+                <p><strong>Prompts:</strong> p1 = "a medieval stone castle on a hill", p2 = "a wolf howling"</p>
+            </div>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part1/1_8_illusion2.png" alt="Illusion 2">
+                    <div class="caption">Illusion 2</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part1/1_8_illusion2_flipped.png" alt="Illusion 2 Flipped">
+                    <div class="caption">Illusion 2 (Flipped)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 1.9: Hybrid Images -->
+        <div class="section section-1-9">
+            <h3>1.9: Hybrid Images</h3>
+            <p>Hybrid images combine two different prompts by mixing their frequency components. The algorithm computes noise estimates for both prompts using CFG. It then applies Gaussian blur to extract low-frequency components from the first prompt's noise estimate. High-frequency components are extracted from the second prompt by subtracting its blurred version from the original. The final noise estimate combines low frequencies from prompt 1 with high frequencies from prompt 2, creating an image that looks like one prompt from far away (low frequencies) and another up close (high frequencies).</p>
+            <pre><code>eps1_low = gaussian_blur(eps1, kernel_size=33, sigma=2.0)
+eps2_high = eps2 - gaussian_blur(eps2, kernel_size=33, sigma=2.0)
+eps = eps1_low + eps2_high</code></pre>
+            <p>2 hybrid images combining low and high frequency components from different text prompts:</p>
+            
+            <h4>Hybrid 1</h4>
+            <div class="highlight">
+                <p><strong>Prompts:</strong> "a woman's face looking forward" + "a wolf howling"</p>
+            </div>
+            <div class="image-container">
+                <img src="imgs/Part1/1_9_hybrid_a woman's face looking fo__a wolf howling.png" alt="Hybrid 1">
+            </div>
+
+            <h4>Hybrid 2</h4>
+            <div class="highlight">
+                <p><strong>Prompts:</strong> "a gothic stone tower at sunset" + "a wide landscape of a river flowing through a valley"</p>
+            </div>
+            <div class="image-container">
+                <img src="imgs/Part1/1_9_hybrid_a gothic stone tower at s__a wide landscape of a riv.png" alt="Hybrid 2">
+            </div>
+        </div>
+
+        <!-- Part 2: Training Diffusion Models -->
+        <div class="section">
+            <h2>Part 2: Training Diffusion Models</h2>
+
+            <!-- Part 2.1.2: Using the UNet to Train a Denoiser -->
+            <h3>2.1.2: Using the UNet to Train a Denoiser</h3>
+            <p>Visualization of the noising process using σ = [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]:</p>
+            <div class="image-container">
+                <img src="imgs/Part2/1point2.png" alt="Noising Process Visualization">
+            </div>
+
+            <!-- Part 2.1.2.1: Training Results -->
+            <h4>2.1.2.1: Training Results</h4>
+            <p>Training loss curve for σ = 0.5:</p>
+            <div class="image-container">
+                <img src="imgs/Part2/1Point2Point1Loss.png" alt="Training Loss Curve">
+            </div>
+
+            <p>Sample results on the test set with noise level 0.5:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part2/1Point2Point1Epoch1.png" alt="Results after Epoch 1">
+                    <div class="caption">After Epoch 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part2/1Point2Point1Epoch5.png" alt="Results after Epoch 5">
+                    <div class="caption">After Epoch 5</div>
+                </div>
+            </div>
+
+            <!-- Part 2.1.2.3: Denoising Pure Noise -->
+            <h4>2.1.2.3: Denoising Pure Noise</h4>
+            <p>Training loss curve for denoising pure noise:</p>
+            <div class="image-container">
+                <img src="imgs/Part2/1Point2Point3Loss.png" alt="Training Loss Curve for Pure Noise">
+            </div>
+
+            <p>Sample results generated from pure noise:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part2/1Point2Point3Epoch1.png" alt="Results after Epoch 1">
+                    <div class="caption">After Epoch 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part2/1Point2Point3Epoch5.png" alt="Results after Epoch 5">
+                    <div class="caption">After Epoch 5</div>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <h4>Observations:</h4>
+                <p>The generated outputs show blurry, averaged versions of the training digits rather than distinct individual digits. This occurs because the MSE loss function causes the model to learn to predict the point that minimizes the sum of squared distances to all training examples, which corresponds to the centroid or mean of the training data. Since the model is trained on all digits (0-9), it learns to predict an average digit that blends features from all classes, resulting in indistinct, blurred outputs that don't clearly represent any specific digit.</p>
+            </div>
+        </div>
+
+        <!-- Part 2.2: Training the UNet -->
+        <div class="section">
+            <h3>2.2: Training the UNet</h3>
+            <p>Training loss curve for the time-conditioned UNet over the whole training process:</p>
+            <div class="image-container">
+                <img src="imgs/Part2/2Point2Loss.png" alt="Training Loss Curve for Time-Conditioned UNet">
+            </div>
+        </div>
+
+        <!-- Part 2.3: Sampling from the UNet -->
+        <div class="section">
+            <h3>2.3: Sampling from the UNet</h3>
+            <p>Sampling results from the time-conditioned UNet for 1, 5, and 10 epochs:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part2/2Point3Epoch1.png" alt="Epoch 1">
+                    <div class="caption">Epoch 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part2/2Point3Epoch5.png" alt="Epoch 5">
+                    <div class="caption">Epoch 5</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part2/2Point3Epoch10.png" alt="Epoch 10">
+                    <div class="caption">Epoch 10</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 2.5: Training the UNet (Class-Conditioned) -->
+        <div class="section">
+            <h3>2.5: Training the UNet (Class-Conditioned)</h3>
+            <p>Training loss curve for the class-conditioned UNet over the whole training process:</p>
+            <div class="image-container">
+                <img src="imgs/Part2/2Point5Loss.png" alt="Training Loss Curve for Class-Conditioned UNet">
+            </div>
+        </div>
+
+        <!-- Part 2.6: Sampling from the UNet (Class-Conditioned) -->
+        <div class="section">
+            <h3>2.6: Sampling from the UNet (Class-Conditioned)</h3>
+            <p>Sampling results from the class-conditioned UNet with classifier-free guidance (γ = 5.0) for 1, 5, and 10 epochs. 4 instances of each digit (0-9) are generated:</p>
+            <div class="image-row">
+                <div class="image-item">
+                    <img src="imgs/Part2/2Point6Epoch1.png" alt="Epoch 1">
+                    <div class="caption">Epoch 1</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part2/2Point6Epoch5.png" alt="Epoch 5">
+                    <div class="caption">Epoch 5</div>
+                </div>
+                <div class="image-item">
+                    <img src="imgs/Part2/2Point6Epoch10.png" alt="Epoch 10">
+                    <div class="caption">Epoch 10</div>
+                </div>
+            </div>
+
+            <h4>Results Without Learning Rate Scheduler</h4>
+            <p>To maintain the same performance after removing the exponential learning rate scheduler, I used a constant learning rate throughout training. The exponential scheduler gradually reduces the learning rate over epochs, which helps with convergence. To compensate, I set a lower constant learning rate (e.g., 5e-3 instead of 1e-2) to prevent overshooting in later epochs while still allowing the model to learn effectively. Alternatively, training for additional epochs with a constant rate can achieve similar convergence behavior. The sampling results show that class-conditioning with classifier-free guidance produces clear, distinct digits for each class, demonstrating that the model successfully learns to generate class-specific images.</p>
+        </div>
+    </div>
+
+    <script src="project5_script.js"></script>
+</body>
+</html>
+
