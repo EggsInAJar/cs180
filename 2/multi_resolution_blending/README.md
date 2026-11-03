@@ -46,16 +46,16 @@ from generic_blender import blend_images
 result = blend_images('image1.jpg', 'image2.jpg', mask_type='vertical')
 
 # Custom blend with options
-result = blend_images('image1.jpg', 'image2.jpg', 
-                     mask_type='diagonal', 
-                     position=0.3, 
+result = blend_images('image1.jpg', 'image2.jpg',
+                     mask_type='diagonal',
+                     position=0.3,
                      levels=8,
                      show_stacks=True)
 ```
 
 ### Available Mask Types
 - **`vertical`** - Smooth vertical seam
-- **`horizontal`** - Smooth horizontal seam  
+- **`horizontal`** - Smooth horizontal seam
 - **`diagonal`** - Diagonal gradient blend
 - **`circular`** - Circular region blend
 - **`diamond`** - Diamond pattern blend

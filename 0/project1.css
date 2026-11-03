@@ -228,21 +228,21 @@ section h4 {
         grid-template-columns: 1fr;
         gap: 20px;
     }
-    
+
     .findings-grid,
     .tech-grid {
         grid-template-columns: 1fr;
         gap: 20px;
     }
-    
+
     .project-header h1 {
         font-size: 1.8rem;
     }
-    
+
     section h2 {
         font-size: 1.5rem;
     }
-    
+
     .demo-image {
         height: 180px;
     }
@@ -252,11 +252,11 @@ section h4 {
     .container {
         padding: 25px 20px;
     }
-    
+
     .demo-item {
         padding: 15px;
     }
-    
+
     .finding-card,
     .tech-item {
         padding: 20px;
@@ -406,18 +406,18 @@ section h4 {
         flex-direction: column;
         align-items: center;
     }
-    
+
     .arch-item {
         width: 100%;
         max-width: 300px;
     }
-    
+
     .gif-wrapper {
         margin: 20px 10px;
         padding: 15px;
     }
-    
+
     .dolly-technique {
         margin: 20px 10px;
     }
-} 
+}

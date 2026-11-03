@@ -1,6 +1,6 @@
 // Enhanced Professional JavaScript Effects
 document.addEventListener('DOMContentLoaded', function() {
-    
+
     // Initialize all components
     initScrollReveal();
     initFloatingButton();
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initImageModal();
     initTableEnhancements();
     initCodeBlockEnhancements();
-    
+
     // Add loading state
     document.body.classList.add('loaded');
 });
@@ -24,7 +24,7 @@ function initScrollReveal() {
         threshold: 0.1,
         rootMargin: '0px 0px -30px 0px'
     };
-    
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -33,7 +33,7 @@ function initScrollReveal() {
             }
         });
     }, observerOptions);
-    
+
     // Observe elements with staggered delays
     document.querySelectorAll('.section, .image-item, table, .code-block').forEach((element, index) => {
         element.classList.add('scroll-reveal');
@@ -50,16 +50,16 @@ function initFloatingButton() {
     floatingBtn.title = 'Back to Top';
     floatingBtn.setAttribute('aria-label', 'Back to top');
     document.body.appendChild(floatingBtn);
-    
+
     let isVisible = false;
-    
+
     floatingBtn.addEventListener('click', () => {
         window.scrollTo({
             top: 0,
             behavior: 'smooth'
         });
     });
-    
+
     // Throttled scroll handler for better performance
     let ticking = false;
     window.addEventListener('scroll', () => {
@@ -91,7 +91,7 @@ function initLazyLoading() {
             }
         });
     }, { threshold: 0.1 });
-    
+
     document.querySelectorAll('img[data-src]').forEach(img => {
         imageObserver.observe(img);
     });
@@ -104,21 +104,21 @@ function initInteractiveElements() {
         item.addEventListener('mouseenter', function() {
             this.style.transform = 'translateY(-8px) scale(1.02)';
         });
-        
+
         item.addEventListener('mouseleave', function() {
             this.style.transform = 'translateY(0) scale(1)';
         });
-        
+
         // Add subtle click feedback
         item.addEventListener('mousedown', function() {
             this.style.transform = 'translateY(-4px) scale(0.98)';
         });
-        
+
         item.addEventListener('mouseup', function() {
             this.style.transform = 'translateY(-8px) scale(1.02)';
         });
     });
-    
+
     // Enhanced button interactions
     document.querySelectorAll('button').forEach(button => {
         button.addEventListener('click', createRippleEffect);
@@ -133,7 +133,7 @@ function createRippleEffect(e) {
     const size = Math.max(rect.width, rect.height);
     const x = e.clientX - rect.left - size / 2;
     const y = e.clientY - rect.top - size / 2;
-    
+
     ripple.style.cssText = `
         position: absolute;
         width: ${size}px;
@@ -146,11 +146,11 @@ function createRippleEffect(e) {
         animation: ripple 0.6s linear;
         pointer-events: none;
     `;
-    
+
     button.style.position = 'relative';
     button.style.overflow = 'hidden';
     button.appendChild(ripple);
-    
+
     setTimeout(() => ripple.remove(), 600);
 }
 
@@ -168,16 +168,16 @@ function initParticleBackground() {
         opacity: 0.4;
     `;
     document.body.appendChild(canvas);
-    
+
     const ctx = canvas.getContext('2d');
     let particles = [];
     let animationId;
-    
+
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     }
-    
+
     function createParticle() {
         return {
             x: Math.random() * canvas.width,
@@ -188,7 +188,7 @@ function initParticleBackground() {
             opacity: Math.random() * 0.3 + 0.1
         };
     }
-    
+
     function initParticles() {
         particles = [];
         const particleCount = Math.min(30, Math.floor((canvas.width * canvas.height) / 10000));
@@ -196,20 +196,20 @@ function initParticleBackground() {
             particles.push(createParticle());
         }
     }
-    
+
     function updateParticles() {
         particles.forEach(particle => {
             particle.x += particle.vx;
             particle.y += particle.vy;
-            
+
             if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
             if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
         });
     }
-    
+
     function drawParticles() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         particles.forEach(particle => {
             ctx.beginPath();
             ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
@@ -217,22 +217,22 @@ function initParticleBackground() {
             ctx.fill();
         });
     }
-    
+
     function animate() {
         updateParticles();
         drawParticles();
         animationId = requestAnimationFrame(animate);
     }
-    
+
     resizeCanvas();
     initParticles();
     animate();
-    
+
     window.addEventListener('resize', () => {
         resizeCanvas();
         initParticles();
     });
-    
+
     // Cleanup on page unload
     window.addEventListener('beforeunload', () => {
         if (animationId) {
@@ -245,11 +245,11 @@ function initParticleBackground() {
 function initTypingAnimation() {
     const title = document.querySelector('h1');
     if (!title) return;
-    
+
     const text = title.textContent;
     title.textContent = '';
     title.style.borderRight = '2px solid #3b82f6';
-    
+
     let i = 0;
     function typeWriter() {
         if (i < text.length) {
@@ -262,7 +262,7 @@ function initTypingAnimation() {
             }, 1000);
         }
     }
-    
+
     setTimeout(typeWriter, 300);
 }
 
@@ -271,7 +271,7 @@ function initProgressBar() {
     const progressBar = document.createElement('div');
     progressBar.className = 'progress-bar';
     document.body.appendChild(progressBar);
-    
+
     let ticking = false;
     window.addEventListener('scroll', () => {
         if (!ticking) {
@@ -324,7 +324,7 @@ function initImageModal() {
                 opacity: 0;
                 transition: opacity 0.3s ease;
             `;
-            
+
             const modalImg = document.createElement('img');
             modalImg.src = this.src;
             modalImg.style.cssText = `
@@ -335,24 +335,24 @@ function initImageModal() {
                 transform: scale(0.9);
                 transition: transform 0.3s ease;
             `;
-            
+
             modal.appendChild(modalImg);
             document.body.appendChild(modal);
-            
+
             // Animate in
             requestAnimationFrame(() => {
                 modal.style.opacity = '1';
                 modalImg.style.transform = 'scale(1)';
             });
-            
+
             const closeModal = () => {
                 modal.style.opacity = '0';
                 modalImg.style.transform = 'scale(0.9)';
                 setTimeout(() => modal.remove(), 300);
             };
-            
+
             modal.addEventListener('click', closeModal);
-            
+
             // Keyboard support
             const handleKeydown = (e) => {
                 if (e.key === 'Escape') {
@@ -372,7 +372,7 @@ function initTableEnhancements() {
             this.style.transform = 'scale(1.01)';
             this.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
         });
-        
+
         row.addEventListener('mouseleave', function() {
             this.style.transform = 'scale(1)';
             this.style.boxShadow = 'none';
@@ -399,7 +399,7 @@ function initCodeBlockEnhancements() {
             font-size: 12px;
             transition: all 0.2s ease;
         `;
-        
+
         copyBtn.addEventListener('click', () => {
             const text = block.textContent;
             navigator.clipboard.writeText(text).then(() => {
@@ -409,15 +409,15 @@ function initCodeBlockEnhancements() {
                 }, 2000);
             });
         });
-        
+
         copyBtn.addEventListener('mouseenter', () => {
             copyBtn.style.background = 'rgba(255, 255, 255, 0.2)';
         });
-        
+
         copyBtn.addEventListener('mouseleave', () => {
             copyBtn.style.background = 'rgba(255, 255, 255, 0.1)';
         });
-        
+
         block.appendChild(copyBtn);
     });
 }
@@ -431,16 +431,16 @@ style.textContent = `
             opacity: 0;
         }
     }
-    
+
     .loaded {
         opacity: 1;
         transition: opacity 0.3s ease;
     }
-    
+
     body:not(.loaded) {
         opacity: 0;
     }
-    
+
     body.loaded {
         opacity: 1;
         transition: opacity 0.5s ease;

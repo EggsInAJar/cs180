@@ -6,7 +6,7 @@ function updateProgressBar() {
     const docHeight = document.body.scrollHeight - window.innerHeight;
     const scrollPercent = (scrollTop / docHeight) * 100;
     const progressBar = document.querySelector('.progress-bar');
-    
+
     if (progressBar) {
         progressBar.style.width = scrollPercent + '%';
     }
@@ -15,12 +15,12 @@ function updateProgressBar() {
 // Scroll reveal animations
 function revealOnScroll() {
     const reveals = document.querySelectorAll('.scroll-reveal');
-    
+
     reveals.forEach(element => {
         const windowHeight = window.innerHeight;
         const elementTop = element.getBoundingClientRect().top;
         const elementVisible = 150;
-        
+
         if (elementTop < windowHeight - elementVisible) {
             element.classList.add('revealed');
         }
@@ -46,7 +46,7 @@ function initSmoothScrolling() {
 // Image lazy loading
 function initLazyLoading() {
     const images = document.querySelectorAll('img[data-src]');
-    
+
     const imageObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -57,7 +57,7 @@ function initLazyLoading() {
             }
         });
     });
-    
+
     images.forEach(img => imageObserver.observe(img));
 }
 
@@ -67,16 +67,16 @@ function createFloatingButton() {
     floatingBtn.className = 'floating-btn';
     floatingBtn.innerHTML = '↑';
     floatingBtn.setAttribute('aria-label', 'Back to top');
-    
+
     floatingBtn.addEventListener('click', () => {
         window.scrollTo({
             top: 0,
             behavior: 'smooth'
         });
     });
-    
+
     document.body.appendChild(floatingBtn);
-    
+
     // Show/hide based on scroll position
     window.addEventListener('scroll', () => {
         if (window.pageYOffset > 300) {
@@ -97,16 +97,16 @@ function createProgressBar() {
 // Table row highlighting
 function initTableInteractions() {
     const tables = document.querySelectorAll('table');
-    
+
     tables.forEach(table => {
         const rows = table.querySelectorAll('tbody tr');
-        
+
         rows.forEach(row => {
             row.addEventListener('mouseenter', function() {
                 this.style.transform = 'scale(1.02)';
                 this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
             });
-            
+
             row.addEventListener('mouseleave', function() {
                 this.style.transform = 'scale(1)';
                 this.style.boxShadow = 'none';
@@ -118,7 +118,7 @@ function initTableInteractions() {
 // Image modal functionality
 function initImageModals() {
     const images = document.querySelectorAll('.image-item img');
-    
+
     images.forEach(img => {
         img.addEventListener('click', function() {
             const modal = document.createElement('div');
@@ -136,7 +136,7 @@ function initImageModals() {
                 z-index: 10000;
                 cursor: pointer;
             `;
-            
+
             const modalImg = document.createElement('img');
             modalImg.src = this.src;
             modalImg.style.cssText = `
@@ -145,10 +145,10 @@ function initImageModals() {
                 border-radius: 8px;
                 box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             `;
-            
+
             modal.appendChild(modalImg);
             document.body.appendChild(modal);
-            
+
             modal.addEventListener('click', () => {
                 document.body.removeChild(modal);
             });
@@ -165,11 +165,11 @@ function initKeyboardNavigation() {
                 document.body.removeChild(modal);
             }
         }
-        
+
         if (e.key === 'Home') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-        
+
         if (e.key === 'End') {
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
@@ -196,16 +196,16 @@ function init() {
     initImageModals();
     initKeyboardNavigation();
     initPerformanceMonitoring();
-    
+
     // Add scroll event listeners
     window.addEventListener('scroll', () => {
         updateProgressBar();
         revealOnScroll();
     });
-    
+
     // Initial call for elements already in view
     revealOnScroll();
-    
+
     // Add loading animation completion
     document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('loaded');

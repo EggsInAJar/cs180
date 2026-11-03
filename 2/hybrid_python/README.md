@@ -42,12 +42,12 @@ The implementation follows the Oliva, Torralba, and Schyns algorithm:
 from generic_hybrid import create_hybrid_image
 
 # Create hybrid image
-hybrid, analysis = create_hybrid_image('image1.jpg', 'image2.jpg', 
+hybrid, analysis = create_hybrid_image('image1.jpg', 'image2.jpg',
                                      sigma1=0.5, sigma2=3.0)
 
 # Create hybrid with alignment
-hybrid, analysis = create_hybrid_image('image1.jpg', 'image2.jpg', 
-                                     sigma1=0.5, sigma2=3.0, 
+hybrid, analysis = create_hybrid_image('image1.jpg', 'image2.jpg',
+                                     sigma1=0.5, sigma2=3.0,
                                      align_images_flag=True)
 ```
 
@@ -55,10 +55,10 @@ hybrid, analysis = create_hybrid_image('image1.jpg', 'image2.jpg',
 ```python
 # Full-featured hybrid creation
 hybrid, analysis = create_hybrid_image(
-    'high_freq_source.jpg', 
+    'high_freq_source.jpg',
     'low_freq_source.jpg',
     sigma1=0.4,           # High frequency extraction
-    sigma2=3.0,           # Low frequency extraction  
+    sigma2=3.0,           # Low frequency extraction
     align_images_flag=True,    # Align images
     show_pyramids=True,        # Show pyramid visualizations
     show_frequency_analysis=True,  # Show frequency analysis
@@ -115,7 +115,7 @@ The `images/` folder contains example hybrids:
 - **Hybrid Effect**: Combines both for distance-dependent perception
 
 ### Parameter Tuning
-- **`sigma1` (High Freq)**: 
+- **`sigma1` (High Freq)**:
   - Small values (0.3-0.5): Extract fine details
   - Large values (1.0+): Extract broader features
 - **`sigma2` (Low Freq)**:

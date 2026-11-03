@@ -3,7 +3,7 @@ window.addEventListener('scroll', () => {
     const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
     const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     const scrolled = (winScroll / height) * 100;
-    
+
     let progressBar = document.querySelector('.progress-bar');
     if (!progressBar) {
         progressBar = document.createElement('div');
