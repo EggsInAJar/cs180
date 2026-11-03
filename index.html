@@ -1,20 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Portfolio</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Merrick Zheng's personal portfolio. Projects in AI, computer vision, image processing, and photography.">
+  <meta name="theme-color" content="#f7f9fc">
+  <title>Merrick Zheng | Projects & experiments</title>
+  <link rel="stylesheet" href="https://eggsinajar.github.io/profile.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to Merrick's CS180 Portfolio!</h1>
-        <div class="projects-grid">
-            <a href="./0/index.html" class="project-link">Project 0</a>
-            <a href="./1/project1_report.html" class="project-link">Project 1</a>
-            <a href="./2/computer_vision_portfolio.html" class="project-link">Project 2</a>
-            <a href="./3/index.html" class="project-link">Project 3</a>
-            <a href="./4/index.html" class="project-link">Project 4</a>
-            <a href="./5/index.html" class="project-link">Project 5</a>
-        </div>
-    </div>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="name" href="./">Merrick Zheng<span class="name-dot" aria-hidden="true">.</span></a>
+    <nav aria-label="Main navigation"><a href="#about">About</a><a href="#projects">Projects</a><a href="https://github.com/EggsInAJar">GitHub</a></nav>
+  </header>
+  <main id="main">
+    <section class="intro" id="about" aria-labelledby="intro-title">
+      <div><h1 id="intro-title">Hi, I’m Merrick.<br>I build, explore,<br>and experiment.</h1>
+      <p>I’m interested in AI, computer vision, and making things with code. This is a collection of my projects and the ideas I’ve explored along the way.</p>
+      <a class="primary-link" href="#projects">Explore my projects</a></div>
+      <div class="intro-art" aria-hidden="true"><span class="lens lens-one"></span><span class="lens lens-two"></span><span class="lens lens-three"></span><span class="art-caption">A different way to see things.</span></div>
+    </section>
+    <section id="projects" aria-labelledby="projects-title">
+      <div class="section-heading"><h2 id="projects-title">Projects</h2><p>Experiments in images, intelligence, and perspective.</p></div>
+      <div class="projects-grid"><article class="project">
+      <a class="project-image" href="https://eggsinajar.github.io/projects/5/index.html" aria-label="View Diffusion models"><img src="https://eggsinajar.github.io/projects/5/imgs/Part1/1_8_illusion1.png" alt="" width="640" height="400" loading="lazy"></a>
+      <p class="category">AI & generative images</p>
+      <h3><a href="https://eggsinajar.github.io/projects/5/index.html">Diffusion models</a></h3>
+      <p>Generating images, exploring visual illusions, and training models to turn noise into something recognizable.</p>
+    </article>
+<article class="project">
+      <a class="project-image" href="https://eggsinajar.github.io/projects/4/index.html" aria-label="View Neural radiance fields"><img src="https://eggsinajar.github.io/projects/4/imgs/final_results_grid_custom.png" alt="" width="640" height="400" loading="lazy"></a>
+      <p class="category">Machine learning & 3D</p>
+      <h3><a href="https://eggsinajar.github.io/projects/4/index.html">Neural radiance fields</a></h3>
+      <p>Reconstructing scenes from photographs and learning how to render them from new viewpoints.</p>
+    </article>
+<article class="project">
+      <a class="project-image" href="https://eggsinajar.github.io/projects/3/index.html" aria-label="View Image mosaics"><img src="https://eggsinajar.github.io/projects/3/imgs/automatic_mosaic_1a_final.png" alt="" width="640" height="400" loading="lazy"></a>
+      <p class="category">Computer vision</p>
+      <h3><a href="https://eggsinajar.github.io/projects/3/index.html">Image mosaics</a></h3>
+      <p>Finding correspondences, warping perspectives, and stitching photographs into wider views.</p>
+    </article>
+<article class="project">
+      <a class="project-image" href="https://eggsinajar.github.io/projects/2/computer_vision_portfolio.html" aria-label="View Filters, edges & image blending"><img src="https://eggsinajar.github.io/projects/2/multi_resolution_blending/results/apple_orange_step_blend_advanced.png" alt="" width="640" height="400" loading="lazy"></a>
+      <p class="category">Image processing</p>
+      <h3><a href="https://eggsinajar.github.io/projects/2/computer_vision_portfolio.html">Filters, edges & image blending</a></h3>
+      <p>Exploring image frequencies through edge detection, hybrid images, and multi-resolution blending.</p>
+    </article>
+<article class="project">
+      <a class="project-image" href="https://eggsinajar.github.io/projects/1/project1_report.html" aria-label="View Bringing historic photos to color"><img src="https://eggsinajar.github.io/projects/1/data_colorized/emir_colorized.jpg" alt="" width="640" height="400" loading="lazy"></a>
+      <p class="category">Photography & computation</p>
+      <h3><a href="https://eggsinajar.github.io/projects/1/project1_report.html">Bringing historic photos to color</a></h3>
+      <p>Aligning separate glass-plate exposures to recover full-color photographs from the past.</p>
+    </article>
+<article class="project">
+      <a class="project-image" href="https://eggsinajar.github.io/projects/0/index.html" aria-label="View Perspective & the camera"><img src="https://eggsinajar.github.io/projects/0/media/85mm-200cm.jpg" alt="" width="640" height="400" loading="lazy"></a>
+      <p class="category">Photography</p>
+      <h3><a href="https://eggsinajar.github.io/projects/0/index.html">Perspective & the camera</a></h3>
+      <p>A photographic exploration of focal length, perspective distortion, and the dolly zoom.</p>
+    </article></div>
+    </section>
+  </main>
+  <footer><p>Merrick Zheng</p><a href="https://github.com/EggsInAJar">Find me on GitHub</a></footer>
 </body>
 </html>
