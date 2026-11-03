@@ -13,52 +13,52 @@
         <p style="text-align: center; font-size: 1.25rem; color: #64748b; margin-bottom: 40px;">
             Filters, Edges, Hybrid Images, and Multi-Resolution Blending
         </p>
-        
+
         <div class="section">
             <h2>Project Overview</h2>
             <p>
-                This project implements advanced computer vision algorithms including convolution operations, 
-                edge detection using finite difference operators and Derivative of Gaussian (DoG) filters, 
-                image sharpening through unsharp masking, hybrid image creation using frequency domain processing, 
+                This project implements advanced computer vision algorithms including convolution operations,
+                edge detection using finite difference operators and Derivative of Gaussian (DoG) filters,
+                image sharpening through unsharp masking, hybrid image creation using frequency domain processing,
                 and multi-resolution blending using Gaussian and Laplacian pyramids.
             </p>
             <p>
-                The implementation covers both spatial and frequency domain approaches, demonstrating the 
-                mathematical foundations of digital image processing while providing practical applications 
+                The implementation covers both spatial and frequency domain approaches, demonstrating the
+                mathematical foundations of digital image processing while providing practical applications
                 for image enhancement, analysis, and synthesis.
             </p>
         </div>
 
         <div class="section">
             <h2>Part 1: Filters and Edges</h2>
-            
+
             <h3>Part 1.1: Convolution Implementation</h3>
-            
+
             <div class="methodology">
                 <h4>Understanding Convolution and Implementation Trade-offs</h4>
                 <p>Convolution is a fundamental operation in computer vision that applies a kernel (filter) to every pixel in an image. This section demonstrates three different approaches to implementing 2D convolution, each representing a different balance between code clarity, performance, and optimization level.</p>
-                
+
                 <p><strong>Implementation Approaches:</strong></p>
                 <ul>
                     <li><strong>Four Nested Loops:</strong> The most straightforward implementation using explicit nested loops. While easy to understand and debug, this approach has O(n²k²) complexity and serves primarily educational purposes.</li>
                     <li><strong>Two Loops with NumPy:</strong> An optimized version that leverages NumPy's vectorized operations to eliminate inner loops, reducing complexity and improving performance while maintaining code readability.</li>
                     <li><strong>SciPy Library:</strong> A highly optimized C implementation that serves as both our reference for accuracy validation and our benchmark for performance comparison.</li>
                 </ul>
-                
+
                 <p><strong>Boundary Handling Strategy:</strong></p>
                 <p>All implementations use zero-padding to handle image boundaries. When the convolution kernel extends beyond the image edges, we assume zero values for out-of-bounds pixels. This approach ensures consistent output dimensions while preventing boundary artifacts that could affect subsequent processing steps.</p>
             </div>
 
             <div class="code-section">
                 <h4>Implementation Code:</h4>
-                
+
                 <div class="code-block">
                     <h5>Four Nested Loops Implementation:</h5>
                     <pre><code>def convolution_four_loops(image, kernel, padding):
     h, w = image.shape
     kh, kw = kernel.shape
     result = np.zeros((h, w))
-    
+
     for i in range(h):
         for j in range(w):
             for ki in range(kh):
@@ -67,7 +67,7 @@
                     img_j = j + kj - padding
                     if 0 <= img_i < h and 0 <= img_j < w:
                         result[i, j] += image[img_i, img_j] * kernel[ki, kj]
-    
+
     return result</code></pre>
                 </div>
 
@@ -77,23 +77,23 @@
     h, w = image.shape
     kh, kw = kernel.shape
     result = np.zeros((h, w))
-    
+
     for i in range(h):
         for j in range(w):
             start_i = max(0, i - padding)
             end_i = min(h, i + kh - padding)
             start_j = max(0, j - padding)
             end_j = min(w, j + kw - padding)
-            
+
             kernel_start_i = max(0, padding - i)
             kernel_start_j = max(0, padding - j)
-            
+
             img_region = image[start_i:end_i, start_j:end_j]
             kernel_region = kernel[kernel_start_i:kernel_start_i+end_i-start_i,
                                   kernel_start_j:kernel_start_j+end_j-start_j]
-            
+
             result[i, j] = np.sum(img_region * kernel_region)
-    
+
     return result</code></pre>
                 </div>
             </div>
@@ -115,7 +115,7 @@
                     <li><strong>Boundary Handling:</strong> All implementations use consistent zero-padding for uniform results</li>
                     <li><strong>Memory Efficiency:</strong> Vectorized operations reduce memory overhead and improve cache utilization</li>
                 </ul>
-                
+
                 <p><strong>Key Insights:</strong> The dramatic performance difference between NumPy and SciPy (75.6x) demonstrates the importance of using optimized libraries for production code. While the NumPy implementation provides good readability and moderate performance, SciPy's underlying C implementation offers the best performance for computationally intensive tasks.</p>
             </div>
 
@@ -145,10 +145,10 @@
                     <li><strong>Finding All Edges:</strong> Capturing all important structural boundaries in the image</li>
                     <li><strong>Removing Noise:</strong> Eliminating spurious gradients from image noise and background textures</li>
                 </ul>
-                
+
                 <p><strong>Threshold Decision: 80</strong></p>
                 <p><strong>Reasoning:</strong> After extensive testing with various threshold values, I selected 80 based on the following analysis:</p>
-                
+
                 <div style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; border-radius: 5px;">
                     <h5 style="margin: 0 0 10px 0; color: #007bff;">Trade-off Analysis:</h5>
                     <ul style="margin: 0;">
@@ -157,14 +157,14 @@
                         <li><strong>Optimal (80):</strong> Preserves critical cameraman features while suppressing background noise</li>
                     </ul>
                 </div>
-                
+
                 <p><strong>Specific Issues Addressed:</strong></p>
                 <ul>
                     <li><strong>Background vs Cameraman:</strong> Threshold 80 successfully separates the cameraman subject from the background building and sky, preventing the background from overwhelming the main subject</li>
                     <li><strong>Detail Preservation:</strong> Important features like the camera, tripod, and facial details are preserved without being lost to noise suppression</li>
                     <li><strong>Noise Elimination:</strong> Background textures and sensor noise are effectively filtered out</li>
                 </ul>
-                
+
                 <p><strong>Justification:</strong> This threshold provides the optimal balance for the cameraman image, ensuring the main subject remains prominent while background distractions are minimized. The choice prioritizes structural integrity of the primary subject over capturing every minor texture variation.</p>
             </div>
 
@@ -201,25 +201,25 @@
 
         <div class="section">
             <h2>Part 2: Applications</h2>
-            
+
             <h3>Part 2.1: Unsharp Masking</h3>
-            
+
             <div class="methodology">
                 <h4>Understanding Unsharp Masking: A Frequency Domain Perspective</h4>
                 <p>Unsharp masking is a powerful image enhancement technique that works by manipulating the frequency components of an image. To understand how it works, we need to think about images in terms of their frequency content.</p>
-                
+
                 <p><strong>Frequency Components in Images:</strong></p>
                 <ul>
                     <li><strong>Low Frequencies:</strong> Represent gradual changes in brightness, such as smooth gradients, shadows, and the overall shape of objects</li>
                     <li><strong>High Frequencies:</strong> Represent rapid changes in brightness, such as edges, fine details, and textures</li>
                 </ul>
-                
+
                 <p><strong>The Relationship Between Blur and Frequency:</strong></p>
                 <p>When we apply a blur filter to an image, we're essentially removing high-frequency information. Think of blurring as a low-pass filter that smooths out rapid changes while preserving gradual ones. The more we blur, the more high-frequency details we lose.</p>
-                
+
                 <p><strong>How Unsharp Masking Works:</strong></p>
                 <p>The name "unsharp masking" comes from traditional darkroom photography, but the digital version follows the same principle. The process cleverly uses the relationship between blur and frequency to enhance image sharpness:</p>
-                
+
                 <div class="algorithm-steps">
                     <h4>The Unsharp Masking Process:</h4>
                     <ol>
@@ -228,10 +228,10 @@
                         <li><strong>Amplify and Recombine:</strong> Multiply the high-frequency component by an amplification factor, then add it back to the original image. This boosts the edges and details without affecting the overall brightness or contrast.</li>
                     </ol>
                 </div>
-                
+
                 <p><strong>Why This Works:</strong></p>
                 <p>The brilliance of unsharp masking lies in its ability to selectively enhance only the high-frequency details. By amplifying the difference between the original and blurred versions, we're essentially boosting the edges and fine details that make an image appear sharp, while leaving the overall structure unchanged.</p>
-                
+
                 <p><strong>Controlling the Effect:</strong></p>
                 <p>The amplification factor (amount) controls how much sharpening is applied. Higher values create more dramatic sharpening effects, while lower values provide subtle enhancement. This allows photographers and image processors to fine-tune the sharpening to match their artistic vision or technical requirements.</p>
             </div>
@@ -243,7 +243,7 @@
                     <div class="displacement-info">Amounts: 0.5, 1.0, 1.5, 2.0 | High frequencies amplified for edge enhancement</div>
                 </div>
             </div>
-            
+
             <div class="image-grid">
                 <div class="image-item">
                     <img src="part2_1_evaluation.png" alt="Blur-Sharpen Evaluation">
@@ -259,7 +259,7 @@
 
             <div class="success">
                 <h4>Demonstration Results and Analysis:</h4>
-                
+
                 <p><strong>Varying Sharpening Amounts:</strong></p>
                 <p>The results above demonstrate how different amplification factors affect the final image:</p>
                 <ul>
@@ -268,7 +268,7 @@
                     <li><strong>Amount = 1.5:</strong> Creates more dramatic sharpening with enhanced edge contrast and texture detail</li>
                     <li><strong>Amount = 2.0:</strong> Produces aggressive sharpening that may introduce halos around edges if overdone</li>
                 </ul>
-                
+
                 <p><strong>Key Observations:</strong></p>
                 <ul>
                     <li><strong>Frequency Separation:</strong> The blurred version shows only low-frequency content (smooth gradients), while the high-frequency version reveals only edges and fine details</li>
@@ -276,7 +276,7 @@
                     <li><strong>Parameter Sensitivity:</strong> Small changes in the amount parameter can significantly affect the perceived sharpness</li>
                     <li><strong>Boundary Preservation:</strong> The technique maintains natural image boundaries without introducing artifacts</li>
                 </ul>
-                
+
                 <p><strong>Practical Applications:</strong></p>
                 <p>Unsharp masking is widely used in photography, medical imaging, and digital art to restore sharpness lost during image capture or processing. The ability to control the enhancement strength makes it versatile for both subtle corrections and dramatic artistic effects.</p>
             </div>
@@ -284,7 +284,7 @@
 
         <div class="section">
             <h2>Part 2.2: Hybrid Images</h2>
-            
+
             <h3>FFT-Based Hybrid Image Creation</h3>
             <div class="algorithm-steps">
                 <h4>Hybrid Image Algorithm:</h4>
@@ -306,7 +306,7 @@
                     <div class="displacement-info">Original images | Filtered results | FFT spectra | Cutoff frequencies | Full process breakdown</div>
                 </div>
             </div>
-            
+
             <div class="image-grid">
                 <div class="image-item">
                     <img src="hybrid_python/shrekpair/1.jpg" alt="Shrek Image 1">
@@ -366,7 +366,7 @@
 
         <div class="section">
             <h2>Part 2.3 & 2.4: Multi-Resolution Blending</h2>
-            
+
             <h3>Burt-Adelson Algorithm Implementation</h3>
             <div class="algorithm-steps">
                 <h4>FFT-Based Multi-Resolution Blending:</h4>
@@ -467,7 +467,7 @@
 
         <div class="section">
             <h2>Technical Implementation Summary</h2>
-            
+
             <div class="performance-metric">
                 <h4>Key Algorithms Implemented:</h4>
                 <ul>
@@ -489,7 +489,7 @@
                 </ul>
             </div>
 
-        
+
     <script src="project2_script.js"></script>
 </body>
 </html>

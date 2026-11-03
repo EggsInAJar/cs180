@@ -18,7 +18,7 @@
     <div class="section">
         <h2>Part A.1: Shoot and Digitize Pictures</h2>
         <p>I captured multiple sets of images with projective transformations by fixing the center of projection and rotating the camera. Each set has 40-70% overlap for robust registration.</p>
-        
+
         <h3>Mosaic Image Sets</h3>
         <div class="image-row">
             <div class="image-item">
@@ -30,7 +30,7 @@
                 <div class="caption">Mosaic Set 1 - Image B</div>
             </div>
         </div>
-        
+
         <div class="image-row">
             <div class="image-item">
                 <img src="imgs/Mosaic2a.PNG" alt="Mosaic Set 2a">
@@ -41,7 +41,7 @@
                 <div class="caption">Mosaic Set 2 - Image B</div>
             </div>
         </div>
-        
+
         <div class="image-row">
             <div class="image-item">
                 <img src="imgs/Mosaic3a.PNG" alt="Mosaic Set 3a">
@@ -69,10 +69,10 @@
     <!-- Part A.2: Recover Homographies -->
     <div class="section">
         <h2>Part A.2: Recover Homographies</h2>
-        
+
         <h3>Implementation</h3>
         <p>I implemented <code>computeH(im1_pts, im2_pts)</code> to recover the 3×3 homography matrix using least-squares.</p>
-        
+
         <div class="highlight">
             <strong>Algorithm:</strong>
             <ol>
@@ -90,7 +90,7 @@
         </div>
 
         <h3>System of Equations: Ah = b</h3>
-        
+
         <p><strong>Equation formulation:</strong> For each point correspondence (x₁,y₁) → (x₂,y₂):</p>
         <ul>
             <li>x₂ = (h₀x₁ + h₁y₁ + h₂) / (h₆x₁ + h₇y₁ + 1)</li>
@@ -113,10 +113,10 @@ Mean reprojection error: 16.32 pixels
     <!-- Part A.3: Warp Images -->
     <div class="section">
         <h2>Part A.3: Warp the Images</h2>
-        
+
         <h3>Implementation</h3>
         <p>I implemented two interpolation methods from scratch using inverse warping to avoid holes:</p>
-        
+
         <table>
             <tr>
                 <th>Method</th>
@@ -181,10 +181,10 @@ Mean reprojection error: 16.32 pixels
     <!-- Part A.4: Blend Images -->
     <div class="section">
         <h2>Part A.4: Blend Images into Mosaics</h2>
-        
+
         <h3>Blending Algorithm</h3>
         <p>I implemented <strong>multi-resolution blending using Laplacian pyramids with distance transform masks</strong> to eliminate seam artifacts:</p>
-        
+
         <div class="highlight">
             <strong>Multi-Resolution Blending Procedure:</strong>
             <ol>
@@ -200,7 +200,7 @@ Mean reprojection error: 16.32 pixels
         <p><strong>Why This Works:</strong> Low frequencies (smooth regions) blend gradually while high frequencies (details/textures) transition sharply. Distance transform ensures smooth weight falloff at edges. Result: seamless mosaics with no visible seams!</p>
 
         <h3>Mosaic 1: Indoor Scene</h3>
-        
+
         <h4>Source Images</h4>
         <div class="image-row">
             <div class="image-item">
@@ -212,7 +212,7 @@ Mean reprojection error: 16.32 pixels
                 <div class="caption">Source Image 2 (Reference)</div>
             </div>
         </div>
-        
+
         <h4>Mosaic Results</h4>
         <div class="image-row">
             <div class="image-item">
@@ -249,7 +249,7 @@ Mean reprojection error: 16.32 pixels
     <div class="section">
         <h2>B.1: Harris Corner Detection with ANMS</h2>
         <p>The initial step in automatic mosaicing requires identifying reliable interest points within the images. This is accomplished through Harris corner detection, followed by Adaptive Non-Maximal Suppression (ANMS) to select the most distinctive corners.</p>
-        
+
         <div class="highlight">
             <strong>Deliverables:</strong>
             <ul>
@@ -263,7 +263,7 @@ Mean reprojection error: 16.32 pixels
             <img src="imgs/Image 3aANS.png" alt="Harris Corners with ANMS">
             <div class="caption">Harris corners detected with ANMS for Image 3a</div>
         </div>
-        
+
         <div class="image-container">
             <img src="imgs/Image 3bANS.png" alt="Harris Corners with ANMS">
             <div class="caption">Harris corners detected with ANMS for Image 3b</div>
@@ -274,7 +274,7 @@ Mean reprojection error: 16.32 pixels
     <div class="section">
         <h2>B.2: Feature Descriptor Extraction</h2>
         <p>Each detected corner requires a unique descriptor that can be reliably matched across different images. This is achieved by extracting 8x8 feature descriptors from 40x40 windows around each corner, followed by bias/gain normalization.</p>
-        
+
         <div class="highlight">
             <strong>Deliverables:</strong>
             <ul>
@@ -294,7 +294,7 @@ Mean reprojection error: 16.32 pixels
     <div class="section">
         <h2>B.3: Feature Matching using Lowe Ratio Test</h2>
         <p>Feature matching between image pairs is accomplished using Lowe's ratio test to establish reliable correspondences while filtering out ambiguous matches.</p>
-        
+
         <div class="highlight">
             <strong>Deliverables:</strong>
             <ul>
@@ -308,12 +308,12 @@ Mean reprojection error: 16.32 pixels
             <img src="imgs/Image 1a ↔ Image 1bMatches.png" alt="Feature Matches 1">
             <div class="caption">Feature matches between Image 1a and Image 1b using Lowe ratio test</div>
         </div>
-        
+
         <div class="image-container">
             <img src="imgs/Image 2a ↔ Image 2bMatches.png" alt="Feature Matches 2">
             <div class="caption">Feature matches between Image 2a and Image 2b using Lowe ratio test</div>
         </div>
-        
+
         <div class="image-container">
             <img src="imgs/Image 3a ↔ Image 3bMatches.png" alt="Feature Matches 3">
             <div class="caption">Feature matches between Image 3a and Image 3b using Lowe ratio test</div>
@@ -324,7 +324,7 @@ Mean reprojection error: 16.32 pixels
     <div class="section">
         <h2>B.4: RANSAC for Robust Homography and Automatic Mosaics</h2>
         <p>Despite the filtering provided by the Lowe ratio test, some false matches inevitably remain. RANSAC (RANdom SAmple Consensus) is implemented to handle these outliers and create robust automatic mosaics.</p>
-        
+
         <div class="highlight">
             <strong>Deliverables:</strong>
             <ul>
@@ -339,12 +339,12 @@ Mean reprojection error: 16.32 pixels
             <img src="imgs/Image 1a ↔ Image 1bRANSAC.png" alt="RANSAC Matches 1">
             <div class="caption">RANSAC inlier matches for Image 1a ↔ Image 1b showing robust homography estimation</div>
         </div>
-        
+
         <div class="image-container">
             <img src="imgs/Image 2a ↔ Image 2bRANSAC.png" alt="RANSAC Matches 2">
             <div class="caption">RANSAC inlier matches for Image 2a ↔ Image 2b showing robust homography estimation</div>
         </div>
-        
+
         <div class="image-container">
             <img src="imgs/Image 3a ↔ Image 3bRANSAC.png" alt="RANSAC Matches 3">
             <div class="caption">RANSAC inlier matches for Image 3a ↔ Image 3b showing robust homography estimation</div>
